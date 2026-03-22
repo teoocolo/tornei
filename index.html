@@ -68,6 +68,8 @@
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
         .btn-secondary { background: #48bb78; }
+        .btn-warning { background: #ed8936; }
+        .btn-danger { background: #e53e3e; }
         .input-group { margin: 15px 0; }
         label { display: block; margin-bottom: 5px; color: #555; font-weight: 600; }
         textarea {
@@ -221,6 +223,106 @@
             color: #234e52;
         }
         
+        /* STILI PER IL TABELLONE FINALE */
+        .bracket-container {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .bracket-title {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .bracket-match {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+        }
+        .bracket-match::before {
+            content: "SEMIFINALE";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .bracket-match.single-girone::before {
+            content: "FINALE";
+            background: #ed8936;
+        }
+        .bracket-match.finals::before {
+            content: "FINALE";
+            background: #ed8936;
+        }
+        .bracket-match.third::before {
+            content: "3° POSTO";
+            background: #48bb78;
+        }
+        .bracket-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        .bracket-team {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f7fafc;
+            font-weight: 600;
+        }
+        .bracket-team.winner {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .bracket-vs {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        .bracket-score-input {
+            width: 60px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .bracket-score-input.completed {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .bracket-result {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .single-girone-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+        
         /* MOBILE OPTIMIZATION */
         @media (max-width: 600px) {
             body { padding: 5px; }
@@ -293,6 +395,13 @@
                 padding: 8px 15px;
                 font-size: 0.85rem;
             }
+            .bracket-teams {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .bracket-vs {
+                transform: rotate(90deg);
+            }
         }
     </style>
 </head>
@@ -300,7 +409,7 @@
     <div class="container">
         <!-- HEADER CON LOGO -->
         <div class="header">
-            <div class="logo"><img src="logo.png" style="width: 40px; height: 40px; object-fit: contain;"></div>
+            <div class="logo">🎾</div>
             <div class="header-text">
                 <h1>Tennis Tournament Manager</h1>
                 <p>Gestione tornei per livello</p>
@@ -315,16 +424,17 @@
                 1. Apri il tuo foglio Google<br>
                 2. Seleziona le colonne <strong>Nome</strong> e <strong>Livello</strong><br>
                 3. Copia (Ctrl+C) e incolla qui sotto (Ctrl+V)<br><br>
-                <em>I livelli verranno convertiti automaticamente:<br>
+                <em>Per il <strong>DOPPIO</strong>: inserisci le coppie come "Mario/Luigi" oppure singoli giocatori che verranno accoppiati automaticamente<br>
+                I livelli verranno convertiti automaticamente:<br>
                 Avviamento → 1 | Pre-perfezionamento → 2 | Perfezionamento → 3 | Specializzazione → 4</em>
             </div>
 
             <div class="input-group">
                 <label>Incolla dati da Google Sheets</label>
-                <textarea id="sheetData" placeholder="Mario Rossi	Avviamento&#10;Luigi Bianchi	Pre-perfezionamento&#10;..."></textarea>
+                <textarea id="sheetData" placeholder="Mario Rossi	Avviamento&#10;Luigi Bianchi	Pre-perfezionamento&#10;Coppia A/Coppia B	Perfezionamento&#10;..."></textarea>
             </div>
             <button class="btn" onclick="importPlayers()">📥 Carica Iscritti</button>
-            <button class="btn btn-secondary" onclick="loadDemoData()">🎮 Dati Demo</button>
+            <button class="btn btn-secondary" onclick="loadDemoData()">🎮 Dati Demo (8 coppie)</button>
         </div>
 
         <div id="screen-players" class="card hidden">
@@ -346,6 +456,25 @@
             <h2>🎯 Gironi e Partite</h2>
             <div class="tabs" id="levelTabs"></div>
             <div id="gironiContainer"></div>
+            
+            <!-- Bottone per creare il tabellone finale -->
+            <div id="createBracketSection" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e0;">
+                <button class="btn btn-warning" onclick="createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
+                <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
+                    Clicca quando tutte le partite dei gironi sono terminate per generare le semifinali o la finale
+                </p>
+            </div>
+        </div>
+
+        <!-- SEZIONE TABELLONE FINALE -->
+        <div id="screen-bracket" class="card hidden">
+            <h2>🏆 Tabellone Finale</h2>
+            <div class="tabs" id="bracketLevelTabs"></div>
+            <div id="bracketContainer"></div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-secondary" onclick="backToGironi()">← Torna ai Gironi</button>
+            </div>
         </div>
 
         <div id="screen-standings" class="card hidden">
@@ -375,6 +504,8 @@
         let gironi = {};
         let currentLevel = null;
         let torneoId = null;
+        let finalBracket = {};
+        let currentBracketLevel = null;
 
         function generaTorneoId() {
             return 'torneo_' + new Date().getTime();
@@ -388,6 +519,7 @@
                 creato: new Date().toISOString(),
                 players: players,
                 gironi: gironi,
+                finalBracket: finalBracket,
                 active: true
             });
             
@@ -404,20 +536,50 @@
                 if (data) {
                     players = data.players || [];
                     gironi = data.gironi || {};
-                    showTournament();
+                    finalBracket = data.finalBracket || {};
+                    if (Object.keys(gironi).length > 0) {
+                        showTournament();
+                        if (Object.keys(finalBracket).length > 0) {
+                            document.getElementById('createBracketSection').innerHTML = `
+                                <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+                            `;
+                        }
+                    } else {
+                        alert('Torneo trovato ma senza gironi. Ricarica la pagina e crea un nuovo torneo.');
+                    }
+                } else {
+                    alert('Torneo non trovato!');
                 }
+            }).catch((error) => {
+                console.error('Errore caricamento torneo:', error);
+                alert('Errore nel caricamento del torneo');
             });
-            ascoltaAggiornamenti();
         }
 
         function ascoltaAggiornamenti() {
             if (!torneoId) return;
             onValue(ref(database, 'tornei/' + torneoId), (snapshot) => {
                 const data = snapshot.val();
-                if (data && data.gironi) {
-                    gironi = data.gironi;
-                    if (!document.getElementById('screen-tournament').classList.contains('hidden')) {
-                        renderGironi();
+                if (data) {
+                    if (data.gironi) {
+                        gironi = data.gironi;
+                        if (currentLevel && gironi[currentLevel]) {
+                            if (!document.getElementById('screen-tournament').classList.contains('hidden')) {
+                                renderGironi();
+                            }
+                        } else if (Object.keys(gironi).length > 0) {
+                            currentLevel = Object.keys(gironi)[0];
+                            if (!document.getElementById('screen-tournament').classList.contains('hidden')) {
+                                renderTabs();
+                                renderGironi();
+                            }
+                        }
+                    }
+                    if (data.finalBracket) {
+                        finalBracket = data.finalBracket;
+                        if (!document.getElementById('screen-bracket').classList.contains('hidden')) {
+                            renderBracket();
+                        }
                     }
                 }
             });
@@ -427,6 +589,7 @@
             if (!torneoId) return;
             update(ref(database, 'tornei/' + torneoId), {
                 gironi: gironi,
+                finalBracket: finalBracket,
                 ultimoAggiornamento: new Date().toISOString()
             });
         }
@@ -446,66 +609,19 @@
         }
 
         function loadDemoData() {
-            const demoData = `Marco Bianchi	avviamento
-Giulia Rossi	avviamento
-Alessandro Verdi	avviamento
-Sofia Ferrari	avviamento
-Luca Romano	avviamento
-Emma Colombo	avviamento
-Matteo Ricci	avviamento
-Chiara Marino	avviamento
-Davide Costa	avviamento
-Francesca Gallo	avviamento
-Andrea Greco	avviamento
-Valentina Bruno	avviamento
-Simone Parisi	avviamento
-Elisa Conti	avviamento
-Federico Lombardi	avviamento
-Lorenzo Moretti	pre-perfezionamento
-Martina Barbieri	pre-perfezionamento
-Nicolas Fontana	pre-perfezionamento
-Alice Santoro	pre-perfezionamento
-Tommaso Rizzo	pre-perfezionamento
-Greta Caruso	pre-perfezionamento
-Edoardo Leone	pre-perfezionamento
-Viola Martini	pre-perfezionamento
-Riccardo Galli	pre-perfezionamento
-Beatrice Serra	pre-perfezionamento
-Gabriele Marchetti	pre-perfezionamento
-Camilla Ferretti	pre-perfezionamento
-Samuele Vitali	pre-perfezionamento
-Aurora Pellegrini	pre-perfezionamento
-Daniele Costa	pre-perfezionamento
-Filippo Gatti	perfezionamento
-Bianca Sanna	perfezionamento
-Antonio Longo	perfezionamento
-Ludovica Rinaldi	perfezionamento
-Emanuele Mariani	perfezionamento
-Cecilia Coppola	perfezionamento
-Pietro De Angelis	perfezionamento
-Giorgia D'Amico	perfezionamento
-Michele Bernardi	perfezionamento
-Silvia Pachetti	perfezionamento
-Stefano Farina	perfezionamento
-Irene Cattaneo	perfezionamento
-Claudio Piras	perfezionamento
-Federica Mancini	perfezionamento
-Roberto Fabbri	perfezionamento
-Alessio Grasso	specializzazione
-Vittoria Messina	specializzazione
-Giacomo Palumbo	specializzazione
-Rebecca Monti	specializzazione
-Leonardo Gentile	specializzazione
-Serena Arena	specializzazione
-Matteo Battaglia	specializzazione
-Ilaria Sorrentino	specializzazione
-Davide Guerrini	specializzazione
-Eleonora Basile	specializzazione
-Nicola Benedetti	specializzazione
-Caterina Amato	specializzazione
-Francesco Rizzi	specializzazione
-Miriam Valentini	specializzazione
-Thomas Locatelli	specializzazione`;
+            const demoData = `Marco Rossi/Anna Bianchi	Avviamento
+Luca Verdi/Giulia Ferrari	Avviamento
+Matteo Romano	Avviamento
+Sara Colombo	Avviamento
+Tommaso Ricci	Avviamento
+Elena Marino	Avviamento
+Alessandro Gallo/Chiara Conti	Pre-perfezionamento
+Davide Mancini/Sofia Lombardi	Pre-perfezionamento
+Roberto Fontana	Pre-perfezionamento
+Martina Moretti	Pre-perfezionamento
+Simone Greco	Pre-perfezionamento
+Francesca Santoro	Pre-perfezionamento`;
+            
             document.getElementById('sheetData').value = demoData;
             importPlayers();
         }
@@ -514,25 +630,59 @@ Thomas Locatelli	specializzazione`;
             const data = document.getElementById('sheetData').value.trim();
             if (!data) return alert('Inserisci i dati!');
             
-            players = [];
             const lines = data.split('\n');
             
+            let rawPlayers = [];
             lines.forEach(line => {
                 const parts = line.split('\t');
                 if (parts.length >= 2) {
                     const nome = parts[0].trim();
                     const livelloTesto = parts[1].trim();
                     const livelloNumero = convertiLivello(livelloTesto);
-                    
-                    players.push({
-                        name: nome,
-                        level: livelloNumero,
-                        id: Math.random().toString(36).substr(2, 9)
-                    });
+                    rawPlayers.push({ name: nome, level: livelloNumero });
                 }
             });
             
-            if (players.length === 0) return alert('Nessun giocatore trovato. Verifica il formato: Nome [TAB] Livello');
+            if (rawPlayers.length === 0) return alert('Nessun giocatore trovato. Verifica il formato: Nome [TAB] Livello');
+            
+            players = [];
+            let singoliSenzaCompagno = [];
+            
+            rawPlayers.forEach(p => {
+                if (p.name.includes('/')) {
+                    players.push({
+                        name: p.name,
+                        level: p.level,
+                        id: Math.random().toString(36).substr(2, 9)
+                    });
+                } else {
+                    singoliSenzaCompagno.push(p);
+                }
+            });
+            
+            const livelli = [...new Set(singoliSenzaCompagno.map(p => p.level))];
+            
+            livelli.forEach(livello => {
+                const giocatoriLivello = singoliSenzaCompagno.filter(p => p.level === livello);
+                const shuffled = [...giocatoriLivello].sort(() => Math.random() - 0.5);
+                
+                for (let i = 0; i < shuffled.length; i += 2) {
+                    if (i + 1 < shuffled.length) {
+                        const coppia = `${shuffled[i].name}/${shuffled[i+1].name}`;
+                        players.push({
+                            name: coppia,
+                            level: livello,
+                            id: Math.random().toString(36).substr(2, 9)
+                        });
+                    } else {
+                        players.push({
+                            name: shuffled[i].name,
+                            level: livello,
+                            id: Math.random().toString(36).substr(2, 9)
+                        });
+                    }
+                }
+            });
             
             showPlayersByLevel();
         }
@@ -547,7 +697,7 @@ Thomas Locatelli	specializzazione`;
                 const levelPlayers = players.filter(p => p.level === level);
                 html += `
                     <div style="margin-bottom: 20px;">
-                        <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${nomiLivelli[level]} (Livello ${level}) - ${levelPlayers.length} giocatori</h3>
+                        <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${nomiLivelli[level]} (Livello ${level}) - ${levelPlayers.length} coppie</h3>
                         <div class="player-list">
                             ${levelPlayers.map(p => `
                                 <div class="player-item">
@@ -568,6 +718,7 @@ Thomas Locatelli	specializzazione`;
         function generateTournament() {
             const levels = [...new Set(players.map(p => p.level))].sort();
             gironi = {};
+            finalBracket = {};
             
             levels.forEach(level => {
                 const levelPlayers = players.filter(p => p.level === level);
@@ -628,25 +779,41 @@ Thomas Locatelli	specializzazione`;
 
         function showTournament() {
             const levels = Object.keys(gironi).sort();
+            if (levels.length === 0) {
+                console.error('Nessun livello trovato nei gironi');
+                return;
+            }
             currentLevel = levels[0];
             
-            const nomiLivelli = {1: 'Avviamento', 2: 'Pre-perfezionamento', 3: 'Perfezionamento', 4: 'Specializzazione'};
-            
-            let tabsHtml = '';
-            levels.forEach(level => {
-                tabsHtml += `<div class="tab ${level === currentLevel ? 'active' : ''}" onclick="switchLevel(${level})">${nomiLivelli[level]}</div>`;
-            });
-            document.getElementById('levelTabs').innerHTML = tabsHtml;
-            
+            renderTabs();
             renderGironi();
+            
             document.getElementById('screen-players').classList.add('hidden');
             document.getElementById('screen-tournament').classList.remove('hidden');
             document.getElementById('screen-standings').classList.remove('hidden');
+            
+            document.getElementById('createBracketSection').innerHTML = `
+                <button class="btn btn-warning" onclick="createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
+                <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
+                    Clicca quando tutte le partite dei gironi sono terminate per generare le semifinali o la finale
+                </p>
+            `;
             
             if (torneoId && !new URLSearchParams(window.location.search).get('torneo')) {
                 document.getElementById('shareSection').classList.remove('hidden');
                 document.getElementById('shareUrl').textContent = window.location.href + '?torneo=' + torneoId;
             }
+        }
+
+        function renderTabs() {
+            const levels = Object.keys(gironi).sort();
+            const nomiLivelli = {1: 'Avviamento', 2: 'Pre-perfezionamento', 3: 'Perfezionamento', 4: 'Specializzazione'};
+            
+            let tabsHtml = '';
+            levels.forEach(level => {
+                tabsHtml += `<div class="tab ${level === currentLevel ? 'active' : ''}" onclick="switchLevel(${level})">${nomiLivelli[level] || 'Livello ' + level}</div>`;
+            });
+            document.getElementById('levelTabs').innerHTML = tabsHtml;
         }
 
         window.switchLevel = function(level) {
@@ -657,34 +824,59 @@ Thomas Locatelli	specializzazione`;
         };
 
         function renderGironi() {
+            if (!gironi || Object.keys(gironi).length === 0) {
+                console.log('Nessun girone da renderizzare');
+                return;
+            }
+            
+            if (!currentLevel || !gironi[currentLevel]) {
+                const availableLevels = Object.keys(gironi);
+                if (availableLevels.length > 0) {
+                    currentLevel = availableLevels[0];
+                    renderTabs();
+                } else {
+                    return;
+                }
+            }
+            
             const levelGironi = gironi[currentLevel];
-            if (!levelGironi) return;
+            if (!levelGironi || !Array.isArray(levelGironi)) {
+                console.error('Gironi per livello', currentLevel, 'non validi:', levelGironi);
+                return;
+            }
             
             let html = '';
             levelGironi.forEach(girone => {
+                if (!girone || !girone.players) return;
+                
                 html += `
                     <div class="girone-card">
-                        <div class="girone-title">🏟️ Girone ${girone.id} - ${girone.players.length} giocatori</div>
+                        <div class="girone-title">🏟️ Girone ${girone.id} - ${girone.players.length} coppie</div>
                         <div style="margin-bottom: 15px; color: #666; font-size: 0.85rem;">
                             ${girone.players.map(p => p.name).join(', ')}
                         </div>
                 `;
-                girone.matches.forEach(match => {
-                    html += `
-                        <div class="match-row">
-                            <div class="match-player">${match.player1.name}</div>
-                            <input type="number" class="match-score ${match.completed ? 'completed' : ''}" 
-                                   value="${match.score1 !== null ? match.score1 : ''}" 
-                                   placeholder="0"
-                                   onchange="updateScore('${girone.id}', '${match.id}', 1, this.value)">
-                            <div class="match-player">${match.player2.name}</div>
-                            <input type="number" class="match-score ${match.completed ? 'completed' : ''}" 
-                                   value="${match.score2 !== null ? match.score2 : ''}" 
-                                   placeholder="0"
-                                   onchange="updateScore('${girone.id}', '${match.id}', 2, this.value)">
-                        </div>
-                    `;
-                });
+                
+                if (girone.matches && Array.isArray(girone.matches)) {
+                    girone.matches.forEach(match => {
+                        if (!match || !match.player1 || !match.player2) return;
+                        
+                        html += `
+                            <div class="match-row">
+                                <div class="match-player">${match.player1.name}</div>
+                                <input type="number" class="match-score ${match.completed ? 'completed' : ''}" 
+                                       value="${match.score1 !== null ? match.score1 : ''}" 
+                                       placeholder="0"
+                                       onchange="updateScore('${girone.id}', '${match.id}', 1, this.value)">
+                                <div class="match-player">${match.player2.name}</div>
+                                <input type="number" class="match-score ${match.completed ? 'completed' : ''}" 
+                                       value="${match.score2 !== null ? match.score2 : ''}" 
+                                       placeholder="0"
+                                       onchange="updateScore('${girone.id}', '${match.id}', 2, this.value)">
+                            </div>
+                        `;
+                    });
+                }
                 html += `</div>`;
             });
             document.getElementById('gironiContainer').innerHTML = html;
@@ -692,8 +884,14 @@ Thomas Locatelli	specializzazione`;
         }
 
         window.updateScore = function(gironeId, matchId, player, value) {
+            if (!gironi[currentLevel]) return;
+            
             const girone = gironi[currentLevel].find(g => g.id === gironeId);
+            if (!girone || !girone.matches) return;
+            
             const match = girone.matches.find(m => m.id === matchId);
+            if (!match) return;
+            
             const score = parseInt(value) || 0;
             if (player === 1) match.score1 = score;
             else match.score2 = score;
@@ -704,12 +902,21 @@ Thomas Locatelli	specializzazione`;
         };
 
         function updateStandings() {
+            if (!gironi || Object.keys(gironi).length === 0) {
+                document.getElementById('standingsContainer').innerHTML = '<p>Nessun dato disponibile</p>';
+                return;
+            }
+            
             let html = '';
             const nomiLivelli = {1: 'Avviamento', 2: 'Pre-perfezionamento', 3: 'Perfezionamento', 4: 'Specializzazione'};
             
             Object.keys(gironi).sort().forEach(level => {
-                html += `<h3 style="margin-top: 20px; color: #667eea; font-size: 1.1rem;">${nomiLivelli[level]}</h3>`;
+                if (!gironi[level] || !Array.isArray(gironi[level])) return;
+                
+                html += `<h3 style="margin-top: 20px; color: #667eea; font-size: 1.1rem;">${nomiLivelli[level] || 'Livello ' + level}</h3>`;
                 gironi[level].forEach(girone => {
+                    if (!girone || !girone.players) return;
+                    
                     const stats = calculateStandings(girone);
                     html += `
                         <div style="margin-bottom: 20px;">
@@ -718,11 +925,11 @@ Thomas Locatelli	specializzazione`;
                                 <thead>
                                     <tr>
                                         <th>Pos</th>
-                                        <th>Giocatore</th>
+                                        <th>Coppia</th>
                                         <th>PG</th>
                                         <th>V</th>
                                         <th>P</th>
-                                        <th>DP</th>
+                                        <th>DR</th>
                                         <th>Pti</th>
                                     </tr>
                                 </thead>
@@ -748,8 +955,11 @@ Thomas Locatelli	specializzazione`;
         }
 
         function calculateStandings(girone) {
+            if (!girone || !girone.players || !girone.matches) return [];
+            
             const stats = {};
             girone.players.forEach(p => {
+                if (!p || !p.id) return;
                 stats[p.id] = {
                     name: p.name,
                     played: 0,
@@ -760,16 +970,21 @@ Thomas Locatelli	specializzazione`;
                     points: 0
                 };
             });
+            
             girone.matches.forEach(m => {
-                if (!m.completed) return;
+                if (!m || !m.completed || !m.player1 || !m.player2) return;
+                
                 const p1 = stats[m.player1.id];
                 const p2 = stats[m.player2.id];
+                if (!p1 || !p2) return;
+                
                 p1.played++;
                 p2.played++;
-                p1.gf += m.score1;
-                p1.gs += m.score2;
-                p2.gf += m.score2;
-                p2.gs += m.score1;
+                p1.gf += m.score1 || 0;
+                p1.gs += m.score2 || 0;
+                p2.gf += m.score2 || 0;
+                p2.gs += m.score1 || 0;
+                
                 if (m.score1 > m.score2) {
                     p1.won++;
                     p1.points += 3;
@@ -783,9 +998,338 @@ Thomas Locatelli	specializzazione`;
                     p2.points += 1;
                 }
             });
+            
             return Object.values(stats)
                 .map(s => ({...s, diff: s.gf - s.gs}))
                 .sort((a, b) => b.points - a.points || b.diff - a.diff);
+        }
+
+        // ==================== FUNZIONI PER IL TABELLONE FINALE ====================
+
+        window.createFinalBracket = function() {
+            const levels = Object.keys(gironi).sort();
+            let canCreateBracket = true;
+            let errorMessage = '';
+
+            for (let level of levels) {
+                const levelGironi = gironi[level];
+                if (!levelGironi || levelGironi.length === 0) {
+                    canCreateBracket = false;
+                    errorMessage = `Il livello ${getLevelName(level)} non ha gironi.`;
+                    break;
+                }
+                
+                for (let girone of levelGironi) {
+                    if (!girone.players || girone.players.length < 2) {
+                        canCreateBracket = false;
+                        errorMessage = `Il girone ${girone.id} ha meno di 2 coppie.`;
+                        break;
+                    }
+                }
+            }
+
+            if (!canCreateBracket) {
+                alert(errorMessage);
+                return;
+            }
+
+            // Crea il tabellone per ogni livello
+            finalBracket = {};
+            
+            levels.forEach(level => {
+                const levelGironi = gironi[level];
+                const numGironi = levelGironi.length;
+                
+                if (numGironi === 1) {
+                    // CASO GIRONE UNICO: Finale diretta tra 1° e 2°
+                    const girone = levelGironi[0];
+                    const standings = calculateStandings(girone);
+                    
+                    if (standings.length < 2) {
+                        alert(`Il girone ${girone.id} non ha abbastanza coppie per la finale.`);
+                        return;
+                    }
+                    
+                    finalBracket[level] = {
+                        isSingleGirone: true,
+                        semifinals: [], // Nessuna semifinale
+                        final: {
+                            id: 'F_' + level,
+                            team1: standings[0], // 1° classificato
+                            team2: standings[1], // 2° classificato
+                            score1: null,
+                            score2: null,
+                            completed: false
+                        },
+                        thirdPlace: null // Nessuna finale 3° posto con girone unico
+                    };
+                } else {
+                    // CASO MULTI-GIRONE: Semifinali come prima
+                    const standingsPerGirone = levelGironi.map(g => ({
+                        gironeId: g.id,
+                        standings: calculateStandings(g)
+                    }));
+
+                    const firstPlaceTeams = standingsPerGirone.map(s => s.standings[0]).filter(Boolean);
+                    const secondPlaceTeams = standingsPerGirone.map(s => s.standings[1]).filter(Boolean);
+
+                    finalBracket[level] = {
+                        isSingleGirone: false,
+                        semifinals: [
+                            {
+                                id: 'SF1_' + level,
+                                team1: firstPlaceTeams[0],
+                                team2: secondPlaceTeams[1] || secondPlaceTeams[0],
+                                score1: null,
+                                score2: null,
+                                completed: false
+                            },
+                            {
+                                id: 'SF2_' + level,
+                                team1: firstPlaceTeams[1] || firstPlaceTeams[0],
+                                team2: secondPlaceTeams[0],
+                                score1: null,
+                                score2: null,
+                                completed: false
+                            }
+                        ],
+                        final: null,
+                        thirdPlace: null
+                    };
+
+                    if (levelGironi.length > 2) {
+                        finalBracket[level].semifinals[0].team1 = firstPlaceTeams[0];
+                        finalBracket[level].semifinals[0].team2 = secondPlaceTeams[1] || firstPlaceTeams[2] || secondPlaceTeams[0];
+                        finalBracket[level].semifinals[1].team1 = firstPlaceTeams[1];
+                        finalBracket[level].semifinals[1].team2 = secondPlaceTeams[0] || firstPlaceTeams[2] || secondPlaceTeams[1];
+                    }
+                }
+            });
+
+            salvaSuFirebase();
+            viewFinalBracket();
+            
+            document.getElementById('createBracketSection').innerHTML = `
+                <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+            `;
+        };
+
+        window.viewFinalBracket = function() {
+            document.getElementById('screen-tournament').classList.add('hidden');
+            document.getElementById('screen-standings').classList.add('hidden');
+            document.getElementById('screen-bracket').classList.remove('hidden');
+            
+            renderBracketTabs();
+            renderBracket();
+        };
+
+        window.backToGironi = function() {
+            document.getElementById('screen-bracket').classList.add('hidden');
+            document.getElementById('screen-tournament').classList.remove('hidden');
+            document.getElementById('screen-standings').classList.remove('hidden');
+        };
+
+        function renderBracketTabs() {
+            const levels = Object.keys(finalBracket).sort();
+            const nomiLivelli = {1: 'Avviamento', 2: 'Pre-perfezionamento', 3: 'Perfezionamento', 4: 'Specializzazione'};
+            
+            if (levels.length === 0) return;
+            
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) {
+                currentBracketLevel = levels[0];
+            }
+            
+            let tabsHtml = '';
+            levels.forEach(level => {
+                tabsHtml += `<div class="tab ${level === currentBracketLevel ? 'active' : ''}" onclick="switchBracketLevel(${level})">${nomiLivelli[level] || 'Livello ' + level}</div>`;
+            });
+            document.getElementById('bracketLevelTabs').innerHTML = tabsHtml;
+        }
+
+        window.switchBracketLevel = function(level) {
+            currentBracketLevel = level;
+            document.querySelectorAll('#bracketLevelTabs .tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            renderBracket();
+        };
+
+        function renderBracket() {
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) {
+                document.getElementById('bracketContainer').innerHTML = '<p>Nessun tabellone disponibile per questo livello.</p>';
+                return;
+            }
+
+            const bracket = finalBracket[currentBracketLevel];
+            let html = '<div class="bracket-container">';
+
+            // CASO GIRONE UNICO
+            if (bracket.isSingleGirone) {
+                html += '<div class="single-girone-info">🏆 Girone unico - Finale diretta tra 1° e 2° classificato</div>';
+                
+                if (bracket.final) {
+                    html += '<div class="bracket-title">🏆 Finale</div>';
+                    html += renderFinalMatch(bracket.final, 'single-girone');
+                    
+                    if (bracket.final.completed) {
+                        html += `
+                            <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+                                <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
+                                <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
+                            </div>
+                        `;
+                    }
+                }
+            } else {
+                // CASO MULTI-GIRONE: Semifinali
+                html += '<div class="bracket-title">⚔️ Semifinali</div>';
+                bracket.semifinals.forEach((match, index) => {
+                    if (!match.team1 || !match.team2) {
+                        html += `<div class="bracket-match"><p>Match non disponibile</p></div>`;
+                        return;
+                    }
+                    
+                    html += `
+                        <div class="bracket-match">
+                            <div class="bracket-teams">
+                                <div class="bracket-team ${match.completed && match.score1 > match.score2 ? 'winner' : ''}">
+                                    <div>${match.team1.name}</div>
+                                    <input type="number" class="bracket-score-input ${match.completed ? 'completed' : ''}" 
+                                           value="${match.score1 !== null ? match.score1 : ''}" 
+                                           placeholder="0"
+                                           onchange="updateBracketScore('${match.id}', 1, this.value)">
+                                </div>
+                                <div class="bracket-vs">VS</div>
+                                <div class="bracket-team ${match.completed && match.score2 > match.score1 ? 'winner' : ''}">
+                                    <div>${match.team2.name}</div>
+                                    <input type="number" class="bracket-score-input ${match.completed ? 'completed' : ''}" 
+                                           value="${match.score2 !== null ? match.score2 : ''}" 
+                                           placeholder="0"
+                                           onchange="updateBracketScore('${match.id}', 2, this.value)">
+                                </div>
+                            </div>
+                            ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                // Finale (se le semifinali sono completate)
+                if (bracket.final) {
+                    html += '<div class="bracket-title">🏆 Finale</div>';
+                    html += renderFinalMatch(bracket.final, 'finals');
+                } else if (bracket.semifinals.every(m => m.completed)) {
+                    const sf1Winner = bracket.semifinals[0].score1 > bracket.semifinals[0].score2 ? 
+                        bracket.semifinals[0].team1 : bracket.semifinals[0].team2;
+                    const sf2Winner = bracket.semifinals[1].score1 > bracket.semifinals[1].score2 ? 
+                        bracket.semifinals[1].team1 : bracket.semifinals[1].team2;
+                    
+                    bracket.final = {
+                        id: 'F_' + currentBracketLevel,
+                        team1: sf1Winner,
+                        team2: sf2Winner,
+                        score1: null,
+                        score2: null,
+                        completed: false
+                    };
+                    
+                    html += '<div class="bracket-title">🏆 Finale (generata)</div>';
+                    html += renderFinalMatch(bracket.final, 'finals');
+                }
+
+                // 3° posto (se le semifinali sono completate)
+                if (bracket.thirdPlace) {
+                    html += '<div class="bracket-title">🥉 Finale 3° Posto</div>';
+                    html += renderFinalMatch(bracket.thirdPlace, 'third');
+                } else if (bracket.semifinals.every(m => m.completed) && !bracket.thirdPlace) {
+                    const sf1Loser = bracket.semifinals[0].score1 > bracket.semifinals[0].score2 ? 
+                        bracket.semifinals[0].team2 : bracket.semifinals[0].team1;
+                    const sf2Loser = bracket.semifinals[1].score1 > bracket.semifinals[1].score2 ? 
+                        bracket.semifinals[1].team2 : bracket.semifinals[1].team1;
+                    
+                    bracket.thirdPlace = {
+                        id: 'TP_' + currentBracketLevel,
+                        team1: sf1Loser,
+                        team2: sf2Loser,
+                        score1: null,
+                        score2: null,
+                        completed: false
+                    };
+                    
+                    html += '<div class="bracket-title">🥉 Finale 3° Posto (generata)</div>';
+                    html += renderFinalMatch(bracket.thirdPlace, 'third');
+                }
+            }
+
+            html += '</div>';
+            document.getElementById('bracketContainer').innerHTML = html;
+        }
+
+        function renderFinalMatch(match, cssClass) {
+            if (!match.team1 || !match.team2) return '<p>Match non disponibile</p>';
+            
+            return `
+                <div class="bracket-match ${cssClass}">
+                    <div class="bracket-teams">
+                        <div class="bracket-team ${match.completed && match.score1 > match.score2 ? 'winner' : ''}">
+                            <div>${match.team1.name}</div>
+                            <input type="number" class="bracket-score-input ${match.completed ? 'completed' : ''}" 
+                                   value="${match.score1 !== null ? match.score1 : ''}" 
+                                   placeholder="0"
+                                   onchange="updateBracketScore('${match.id}', 1, this.value)">
+                        </div>
+                        <div class="bracket-vs">VS</div>
+                        <div class="bracket-team ${match.completed && match.score2 > match.score1 ? 'winner' : ''}">
+                            <div>${match.team2.name}</div>
+                            <input type="number" class="bracket-score-input ${match.completed ? 'completed' : ''}" 
+                                   value="${match.score2 !== null ? match.score2 : ''}" 
+                                   placeholder="0"
+                                   onchange="updateBracketScore('${match.id}', 2, this.value)">
+                        </div>
+                    </div>
+                    ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ''}
+                </div>
+            `;
+        }
+
+        window.updateBracketScore = function(matchId, player, value) {
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) return;
+            
+            const bracket = finalBracket[currentBracketLevel];
+            const score = parseInt(value) || 0;
+            
+            let match = null;
+            
+            // Cerca nelle semifinali (solo se multi-girone)
+            if (!bracket.isSingleGirone && bracket.semifinals) {
+                match = bracket.semifinals.find(m => m.id === matchId);
+            }
+            
+            // Cerca nella finale
+            if (!match && bracket.final && bracket.final.id === matchId) {
+                match = bracket.final;
+            }
+            
+            // Cerca nella finale 3° posto
+            if (!match && bracket.thirdPlace && bracket.thirdPlace.id === matchId) {
+                match = bracket.thirdPlace;
+            }
+            
+            if (!match) return;
+            
+            if (player === 1) match.score1 = score;
+            else match.score2 = score;
+            
+            if (match.score1 !== null && match.score2 !== null) {
+                match.completed = true;
+            }
+            
+            salvaSuFirebase();
+            renderBracket();
+        };
+
+        function getLevelName(level) {
+            const nomiLivelli = {1: 'Avviamento', 2: 'Pre-perfezionamento', 3: 'Perfezionamento', 4: 'Specializzazione'};
+            return nomiLivelli[level] || 'Livello ' + level;
         }
 
         window.copiaLink = function() {
@@ -799,6 +1343,11 @@ Thomas Locatelli	specializzazione`;
         window.importPlayers = importPlayers;
         window.generateTournament = generateTournament;
         window.copiaLink = copiaLink;
+        window.createFinalBracket = createFinalBracket;
+        window.viewFinalBracket = viewFinalBracket;
+        window.backToGironi = backToGironi;
+        window.updateBracketScore = updateBracketScore;
+        window.switchBracketLevel = switchBracketLevel;
 
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
@@ -810,5 +1359,3 @@ Thomas Locatelli	specializzazione`;
     </script>
 </body>
 </html>
-
-

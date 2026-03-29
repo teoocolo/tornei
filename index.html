@@ -661,8 +661,8 @@
                 showTournament();
                 if (Object.keys(finalBracket).length > 0) {
                   document.getElementById("createBracketSection").innerHTML = `
-                                <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
-                            `;
+                                      <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+                                  `;
                 }
               } else {
                 alert(
@@ -746,18 +746,19 @@
       }
 
       function loadDemoData() {
-        const demoData = `Marco Rossi/Anna Bianchi	Avviamento
-Luca Verdi/Giulia Ferrari	Avviamento
-Matteo Romano	Avviamento
-Sara Colombo	Avviamento
-Tommaso Ricci	Avviamento
-Elena Marino	Avviamento
-Alessandro Gallo/Chiara Conti	Pre-perfezionamento
-Davide Mancini/Sofia Lombardi	Pre-perfezionamento
-Roberto Fontana	Pre-perfezionamento
-Martina Moretti	Pre-perfezionamento
-Simone Greco	Pre-perfezionamento
-Francesca Santoro	Pre-perfezionamento`;
+        const demoData = `Marco Rossi	Avviamento
+      Luca Verdi Avviamento
+      Anna Bianchi	Avviamento
+      Matteo Romano	Avviamento
+      Sara Colombo	Avviamento
+      Tommaso Ricci	Avviamento
+      Elena Marino	Avviamento
+      Alessandro Gallo/Chiara Conti	Pre-perfezionamento
+      Davide Mancini/Sofia Lombardi	Pre-perfezionamento
+      Roberto Fontana	Pre-perfezionamento
+      Martina Moretti	Pre-perfezionamento
+      Simone Greco	Pre-perfezionamento
+      Francesca Santoro	Pre-perfezionamento`;
 
         document.getElementById("sheetData").value = demoData;
         importPlayers();
@@ -770,103 +771,102 @@ Francesca Santoro	Pre-perfezionamento`;
           return;
         }
 
-        const tipo = getTipoTorneo(); // 🔥 SEMPRE aggiornato
+        const tipoGlobal = getTipoTorneo();
         const lines = data.split("\n");
-
         let rawPlayers = [];
 
-        // 📥 Parsing dati da textarea
         lines.forEach((line) => {
-          const parts = line.split("\t");
-
+          const parts = line.split(",");
           if (parts.length >= 2) {
             const nome = parts[0].trim();
-            const livelloTesto = parts[1].trim();
-            const livelloNumero = convertiLivello(livelloTesto);
-
-            if (nome) {
-              rawPlayers.push({
-                name: nome,
-                level: livelloNumero,
-              });
-            }
+            const livelloNumero = convertiLivello(parts[1].trim());
+            if (nome) rawPlayers.push({ name: nome, level: livelloNumero });
           }
         });
 
-        if (rawPlayers.length === 0) {
-          alert("Formato errato! Usa: Nome [TAB] Livello");
-          return;
-        }
-
         players = [];
+        let giocatoriPerLivello = {};
 
-        // ======================
-        // 🎾 MODALITÀ SINGOLO
-        // ======================
-        if (tipo === "singolo") {
-          rawPlayers.forEach((p) => {
-            players.push({
-              name: p.name,
-              level: p.level,
-              id: Math.random().toString(36).substr(2, 9),
-            });
-          });
-        }
+        rawPlayers.forEach((p) => {
+          if (!giocatoriPerLivello[p.level]) giocatoriPerLivello[p.level] = [];
+          giocatoriPerLivello[p.level].push(p);
+        });
 
-        // ======================
-        // 👥 MODALITÀ DOPPIO
-        // ======================
-        else {
-          let singoliSenzaCompagno = [];
+        Object.keys(giocatoriPerLivello).forEach((levelStr) => {
+          const level = parseInt(levelStr);
+          const lista = giocatoriPerLivello[level];
 
-          // 1️⃣ Se già coppia (Mario/Luigi) → tienila
-          rawPlayers.forEach((p) => {
-            if (p.name.includes("/")) {
+          if (level === 1) {
+            // LIVELLO 1: Sempre singoli per torneo giallo
+            lista.forEach((p) => {
               players.push({
+                id: "p-" + Math.random().toString(36).substr(2, 9),
                 name: p.name,
-                level: p.level,
-                id: Math.random().toString(36).substr(2, 9),
+                level: level,
               });
-            } else {
-              singoliSenzaCompagno.push(p);
-            }
-          });
+            });
+          } else if (tipoGlobal === "doppio") {
+            // ALTRI LIVELLI IN DOPPIO: Gestione Coppie vs Singoli
+            let giaCoppie = [];
+            let singoliDaAccoppiare = [];
 
-          // 2️⃣ Raggruppa per livello
-          const livelli = [
-            ...new Set(singoliSenzaCompagno.map((p) => p.level)),
-          ];
+            // Separiamo chi è già coppia (ha la "/") da chi è singolo
+            lista.forEach((p) => {
+              if (p.name.includes("/")) {
+                giaCoppie.push(p);
+              } else {
+                singoliDaAccoppiare.push(p);
+              }
+            });
 
-          livelli.forEach((livello) => {
-            const gruppo = singoliSenzaCompagno.filter(
-              (p) => p.level === livello,
+            // 1. Aggiungiamo le coppie già fatte
+            giaCoppie.forEach((p) => {
+              players.push({
+                id: "pair-" + Math.random().toString(36).substr(2, 9),
+                name: p.name,
+                level: level,
+              });
+            });
+
+            // 2. Accoppiamo i singoli rimasti (shuffled)
+            const shuffled = [...singoliDaAccoppiare].sort(
+              () => Math.random() - 0.5,
             );
-
-            // 🔀 Mischia
-            const shuffled = [...gruppo].sort(() => Math.random() - 0.5);
-
-            // 3️⃣ Crea coppie
             for (let i = 0; i < shuffled.length; i += 2) {
               if (i + 1 < shuffled.length) {
-                // coppia completa
                 players.push({
-                  name: `${shuffled[i].name}/${shuffled[i + 1].name}`,
-                  level: livello,
-                  id: Math.random().toString(36).substr(2, 9),
+                  id: "pair-" + Math.random().toString(36).substr(2, 9),
+                  name: shuffled[i].name + " / " + shuffled[i + 1].name,
+                  level: level,
                 });
               } else {
-                // ⚠️ dispari → resta singolo
                 players.push({
-                  name: shuffled[i].name + " (solo)",
-                  level: livello,
-                  id: Math.random().toString(36).substr(2, 9),
+                  id: "p-" + Math.random().toString(36).substr(2, 9),
+                  name: shuffled[i].name + " (Cerca compagno)",
+                  level: level,
                 });
               }
             }
-          });
+          } else {
+            // ALTRI LIVELLI IN SINGOLO
+            lista.forEach((p) => {
+              players.push({
+                id: "p-" + Math.random().toString(36).substr(2, 9),
+                name: p.name,
+                level: level,
+              });
+            });
+          }
+        });
+
+        if (players.length === 0) {
+          alert(
+            "Nessun giocatore caricato. Controlla che i livelli siano scritti correttamente!",
+          );
+          return;
         }
 
-        // 🎯 Mostra risultato
+        console.log("Giocatori caricati:", players);
         showPlayersByLevel();
       }
 
@@ -884,22 +884,22 @@ Francesca Santoro	Pre-perfezionamento`;
         levels.forEach((level) => {
           const levelPlayers = players.filter((p) => p.level === level);
           html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${nomiLivelli[level]} (Livello ${level}) - ${levelPlayers.length} coppie</h3>
-                        <div class="player-list">
-                            ${levelPlayers
-                              .map(
-                                (p) => `
-                                <div class="player-item">
-                                    <span>${p.name}</span>
-                                    <span class="level-badge">L${p.level}</span>
-                                </div>
-                            `,
-                              )
-                              .join("")}
-                        </div>
-                    </div>
-                `;
+                          <div style="margin-bottom: 20px;">
+                              <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${nomiLivelli[level]} (Livello ${level}) - ${levelPlayers.length} coppie</h3>
+                              <div class="player-list">
+                                  ${levelPlayers
+                                    .map(
+                                      (p) => `
+                                      <div class="player-item">
+                                          <span>${p.name}</span>
+                                          <span class="level-badge">L${p.level}</span>
+                                      </div>
+                                  `,
+                                    )
+                                    .join("")}
+                              </div>
+                          </div>
+                      `;
         });
 
         document.getElementById("playersByLevel").innerHTML = html;
@@ -907,52 +907,165 @@ Francesca Santoro	Pre-perfezionamento`;
         document.getElementById("screen-players").classList.remove("hidden");
       }
 
-      function generateTournament() {
+      window.generateTournament = function () {
         const levels = [...new Set(players.map((p) => p.level))].sort();
         gironi = {};
-        finalBracket = {};
 
-        levels.forEach((level) => {
-          const levelPlayers = players.filter((p) => p.level === level);
-          const shuffled = [...levelPlayers].sort(() => Math.random() - 0.5);
-          const numPlayers = shuffled.length;
-          let gironiConfig = [];
+        levels.forEach((l) => {
+          const lp = players.filter((p) => p.level === l);
+          gironi[l] = [];
 
-          if (numPlayers <= 5) gironiConfig = [numPlayers];
-          else if (numPlayers === 6) gironiConfig = [3, 3];
-          else if (numPlayers === 7) gironiConfig = [3, 4];
-          else if (numPlayers === 8) gironiConfig = [4, 4];
-          else if (numPlayers === 9) gironiConfig = [4, 5];
-          else if (numPlayers === 10) gironiConfig = [5, 5];
-          else {
-            const numGironi = Math.ceil(numPlayers / 4);
-            const baseSize = Math.floor(numPlayers / numGironi);
-            const remainder = numPlayers % numGironi;
-            for (let i = 0; i < numGironi; i++) {
-              gironiConfig.push(baseSize + (i < remainder ? 1 : 0));
+          if (l === 1) {
+            // LIVELLO 1: Resta il girone unico "Giallo" con rotazioni
+            gironi[l].push({
+              id: "Girone Giallo",
+              level: l,
+              players: lp,
+              matches: generateGialloMatches(lp),
+              isGiallo: true,
+            });
+          } else {
+            // ALTRI LIVELLI: Dividiamo in gironi bilanciati
+            const coppieTotali = lp.length;
+            const shuffledCoppie = [...lp].sort(() => Math.random() - 0.5);
+
+            // Calcoliamo quanti gironi servono (es. con massimo 4 o 5 coppie per girone)
+            // Se hai fino a 5 coppie fa 1 girone, da 6 a 10 ne fa 2, ecc.
+            const numeroGironi = Math.ceil(coppieTotali / 5);
+
+            // Calcoliamo la dimensione base e quante coppie "avanzano" da distribuire
+            const dimensioneBase = Math.floor(coppieTotali / numeroGironi);
+            let resto = coppieTotali % numeroGironi;
+
+            let indiceCorrente = 0;
+
+            for (let i = 0; i < numeroGironi; i++) {
+              // Se c'è del "resto", questo girone prende una coppia in più per bilanciare
+              const dimensioneGirone = dimensioneBase + (resto > 0 ? 1 : 0);
+              resto--;
+
+              const gruppo = shuffledCoppie.slice(
+                indiceCorrente,
+                indiceCorrente + dimensioneGirone,
+              );
+              indiceCorrente += dimensioneGirone;
+
+              const letteraGirone = String.fromCharCode(65 + i); // Genera A, B, C...
+
+              gironi[l].push({
+                id: `Girone ${letteraGirone}`,
+                level: l,
+                players: gruppo,
+                matches: generateMatches(gruppo),
+                isGiallo: false,
+              });
             }
           }
-
-          gironi[level] = [];
-          let playerIndex = 0;
-
-          gironiConfig.forEach((size, idx) => {
-            const gironePlayers = shuffled.slice(
-              playerIndex,
-              playerIndex + size,
-            );
-            playerIndex += size;
-            gironi[level].push({
-              id: `L${level}-G${idx + 1}`,
-              level: level,
-              players: gironePlayers,
-              matches: generateMatches(gironePlayers),
-            });
-          });
         });
 
-        creaNuovoTorneo();
+        torneoId = "torneo_" + Date.now();
+        salvaSuFirebase();
         showTournament();
+      };
+
+      function generateRotationalMatches(p) {
+        const matches = [];
+        const n = p.length;
+
+        if (n < 4) {
+          alert(
+            "Per il doppio a rotazione servono almeno 4 giocatori nel Livello 1.",
+          );
+          return [];
+        }
+
+        // Se sono esattamente 4 giocatori, generiamo le 3 combinazioni matematiche possibili
+        if (n === 4) {
+          // Partita 1: 1-2 vs 3-4
+          matches.push(createMatchObj(p[0], p[1], p[2], p[3]));
+          // Partita 2: 1-3 vs 2-4
+          matches.push(createMatchObj(p[0], p[2], p[1], p[3]));
+          // Partita 3: 1-4 vs 2-3
+          matches.push(createMatchObj(p[0], p[3], p[1], p[2]));
+        } else {
+          // Se sono più di 4 (es. 5, 6, 8), generiamo 4 turni di gioco casuali
+          for (let i = 0; i < 4; i++) {
+            let pool = [...p].sort(() => Math.random() - 0.5);
+            while (pool.length >= 4) {
+              const p1 = pool.shift();
+              const p2 = pool.shift();
+              const p3 = pool.shift();
+              const p4 = pool.shift();
+              matches.push(createMatchObj(p1, p2, p3, p4));
+            }
+          }
+        }
+        return matches;
+      }
+
+      // Funzione helper per creare l'oggetto match con i nomi combinati
+      function createMatchObj(p1, p2, p3, p4) {
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          player1: {
+            name: p1.name + " / " + p2.name,
+            ids: [p1.id, p2.id], // Memorizziamo gli ID per dare i punti ai singoli
+          },
+          player2: {
+            name: p3.name + " / " + p4.name,
+            ids: [p3.id, p4.id],
+          },
+          score1: null,
+          score2: null,
+          completed: false,
+        };
+      }
+
+      function generateGialloMatches(p) {
+        const matches = [];
+        if (p.length === 4) {
+          matches.push(createGialloMatchObj(p[0], p[1], p[2], p[3]));
+          matches.push(createGialloMatchObj(p[0], p[2], p[1], p[3]));
+          matches.push(createGialloMatchObj(p[0], p[3], p[1], p[2]));
+        } else if (p.length > 4) {
+          for (let t = 0; t < 3; t++) {
+            let shuffle = [...p].sort(() => Math.random() - 0.5);
+            for (let i = 0; i + 3 < shuffle.length; i += 4) {
+              matches.push(
+                createGialloMatchObj(
+                  shuffle[i],
+                  shuffle[i + 1],
+                  shuffle[i + 2],
+                  shuffle[i + 3],
+                ),
+              );
+            }
+          }
+        }
+        return matches;
+      }
+
+      function createGialloMatchObj(p1, p2, p3, p4) {
+        return {
+          id: "m-" + Math.random().toString(36).substr(2, 9),
+          player1: { name: `${p1.name} / ${p2.name}`, ids: [p1.id, p2.id] },
+          player2: { name: `${p3.name} / ${p4.name}`, ids: [p3.id, p4.id] },
+          score1: null,
+          score2: null,
+          completed: false,
+        };
+      }
+
+      // Crea l'oggetto partita salvando gli ID dei singoli per dare i punti correttamente
+      function createGialloMatch(p1, p2, p3, p4) {
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          player1: { name: `${p1.name} / ${p2.name}`, ids: [p1.id, p2.id] },
+          player2: { name: `${p3.name} / ${p4.name}`, ids: [p3.id, p4.id] },
+          score1: null,
+          score2: null,
+          completed: false,
+        };
       }
 
       function generateMatches(players) {
@@ -988,11 +1101,11 @@ Francesca Santoro	Pre-perfezionamento`;
         document.getElementById("screen-standings").classList.remove("hidden");
 
         document.getElementById("createBracketSection").innerHTML = `
-                <button class="btn btn-warning" onclick="createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
-                <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
-                    Clicca quando tutte le partite dei gironi sono terminate per generare le semifinali o la finale
-                </p>
-            `;
+                      <button class="btn btn-warning" onclick="createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
+                      <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
+                          Clicca quando tutte le partite dei gironi sono terminate per generare le semifinali o la finale
+                      </p>
+                  `;
 
         if (
           torneoId &&
@@ -1061,31 +1174,31 @@ Francesca Santoro	Pre-perfezionamento`;
           if (!girone || !girone.players) return;
 
           html += `
-                    <div class="girone-card">
-                        <div class="girone-title">🏟️ Girone ${girone.id} - ${girone.players.length} coppie</div>
-                        <div style="margin-bottom: 15px; color: #666; font-size: 0.85rem;">
-                            ${girone.players.map((p) => p.name).join(", ")}
-                        </div>
-                `;
+                          <div class="girone-card">
+                              <div class="girone-title">🏟️ Girone ${girone.id} - ${girone.players.length} Partecipanti</div>
+                              <div style="margin-bottom: 15px; color: #666; font-size: 0.85rem;">
+                                  ${girone.players.map((p) => p.name).join(", ")}
+                              </div>
+                      `;
 
           if (girone.matches && Array.isArray(girone.matches)) {
             girone.matches.forEach((match) => {
               if (!match || !match.player1 || !match.player2) return;
 
               html += `
-                            <div class="match-row">
-                                <div class="match-player">${match.player1.name}</div>
-                                <input type="number" class="match-score ${match.completed ? "completed" : ""}" 
-                                       value="${match.score1 !== null ? match.score1 : ""}" 
-                                       placeholder="0"
-                                       onchange="updateScore('${girone.id}', '${match.id}', 1, this.value)">
-                                <div class="match-player">${match.player2.name}</div>
-                                <input type="number" class="match-score ${match.completed ? "completed" : ""}" 
-                                       value="${match.score2 !== null ? match.score2 : ""}" 
-                                       placeholder="0"
-                                       onchange="updateScore('${girone.id}', '${match.id}', 2, this.value)">
-                            </div>
-                        `;
+                                  <div class="match-row">
+                                      <div class="match-player">${match.player1.name}</div>
+                                      <input type="number" class="match-score ${match.completed ? "completed" : ""}"
+                                             value="${match.score1 !== null ? match.score1 : ""}"
+                                             placeholder="0"
+                                             onchange="updateScore('${girone.id}', '${match.id}', 1, this.value)">
+                                      <div class="match-player">${match.player2.name}</div>
+                                      <input type="number" class="match-score ${match.completed ? "completed" : ""}"
+                                             value="${match.score2 !== null ? match.score2 : ""}"
+                                             placeholder="0"
+                                             onchange="updateScore('${girone.id}', '${match.id}', 2, this.value)">
+                                  </div>
+                              `;
             });
           }
           html += `</div>`;
@@ -1139,40 +1252,40 @@ Francesca Santoro	Pre-perfezionamento`;
 
               const stats = calculateStandings(girone);
               html += `
-                        <div style="margin-bottom: 20px;">
-                            <div style="font-weight: bold; margin-bottom: 10px; color: #555; font-size: 0.9rem;">${girone.id}</div>
-                            <table class="standings">
-                                <thead>
-                                    <tr>
-                                        <th>Pos</th>
-                                        <th>Nome</th>
-                                        <th>PG</th>
-                                        <th>V</th>
-                                        <th>P</th>
-                                        <th>DP</th>
-                                        <th>Pti</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${stats
-                                      .map(
-                                        (s, i) => `
-                                        <tr>
-                                            <td>${i + 1}</td>
-                                            <td><strong>${s.name}</strong></td>
-                                            <td>${s.played}</td>
-                                            <td>${s.won}</td>
-                                            <td>${s.lost}</td>
-                                            <td>${s.diff > 0 ? "+" : ""}${s.diff}</td>
-                                            <td><strong>${s.points}</strong></td>
-                                        </tr>
-                                    `,
-                                      )
-                                      .join("")}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                              <div style="margin-bottom: 20px;">
+                                  <div style="font-weight: bold; margin-bottom: 10px; color: #555; font-size: 0.9rem;">${girone.id}</div>
+                                  <table class="standings">
+                                      <thead>
+                                          <tr>
+                                              <th>Pos</th>
+                                              <th>Nome</th>
+                                              <th>PG</th>
+                                              <th>V</th>
+                                              <th>P</th>
+                                              <th>DP</th>
+                                              <th>Pti</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          ${stats
+                                            .map(
+                                              (s, i) => `
+                                              <tr>
+                                                  <td>${i + 1}</td>
+                                                  <td><strong>${s.name}</strong></td>
+                                                  <td>${s.played}</td>
+                                                  <td>${s.won}</td>
+                                                  <td>${s.lost}</td>
+                                                  <td>${s.diff > 0 ? "+" : ""}${s.diff}</td>
+                                                  <td><strong>${s.points}</strong></td>
+                                              </tr>
+                                          `,
+                                            )
+                                            .join("")}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          `;
             });
           });
         document.getElementById("standingsContainer").innerHTML = html;
@@ -1182,6 +1295,7 @@ Francesca Santoro	Pre-perfezionamento`;
         if (!girone || !girone.players || !girone.matches) return [];
 
         const stats = {};
+        // Inizializzazione
         girone.players.forEach((p) => {
           if (!p || !p.id) return;
           stats[p.id] = {
@@ -1196,30 +1310,65 @@ Francesca Santoro	Pre-perfezionamento`;
         });
 
         girone.matches.forEach((m) => {
-          if (!m || !m.completed || !m.player1 || !m.player2) return;
+          if (!m || !m.completed) return;
 
-          const p1 = stats[m.player1.id];
-          const p2 = stats[m.player2.id];
-          if (!p1 || !p2) return;
+          const s1 = parseInt(m.score1) || 0;
+          const s2 = parseInt(m.score2) || 0;
 
-          p1.played++;
-          p2.played++;
-          p1.gf += m.score1 || 0;
-          p1.gs += m.score2 || 0;
-          p2.gf += m.score2 || 0;
-          p2.gs += m.score1 || 0;
+          // --- LOGICA LIVELLO 1 (GIALLO - INDIVIDUALE) ---
+          if (girone.isGiallo && m.player1.ids && m.player2.ids) {
+            m.player1.ids.forEach((id) => {
+              if (stats[id]) {
+                stats[id].played++;
+                stats[id].gf += s1;
+                stats[id].gs += s2;
+                if (s1 > s2) {
+                  stats[id].won++;
+                  stats[id].points += 3;
+                } else if (s2 > s1) {
+                  stats[id].lost++;
+                }
+              }
+            });
+            m.player2.ids.forEach((id) => {
+              if (stats[id]) {
+                stats[id].played++;
+                stats[id].gf += s2;
+                stats[id].gs += s1;
+                if (s2 > s1) {
+                  stats[id].won++;
+                  stats[id].points += 3;
+                } else if (s1 > s2) {
+                  stats[id].lost++;
+                }
+              }
+            });
+          }
+          // --- LOGICA STANDARD (LIVELLI 2, 3, 4 - COPPIE FISSE) ---
+          else if (m.player1.id && m.player2.id) {
+            const p1 = stats[m.player1.id];
+            const p2 = stats[m.player2.id];
+            if (!p1 || !p2) return;
 
-          if (m.score1 > m.score2) {
-            p1.won++;
-            p1.points += 3;
-            p2.lost++;
-          } else if (m.score2 > m.score1) {
-            p2.won++;
-            p2.points += 3;
-            p1.lost++;
-          } else {
-            p1.points += 1;
-            p2.points += 1;
+            p1.played++;
+            p2.played++;
+            p1.gf += s1;
+            p1.gs += s2;
+            p2.gf += s2;
+            p2.gs += s1;
+
+            if (s1 > s2) {
+              p1.won++;
+              p1.points += 3;
+              p2.lost++;
+            } else if (s2 > s1) {
+              p2.won++;
+              p2.points += 3;
+              p1.lost++;
+            } else {
+              p1.points += 1;
+              p2.points += 1;
+            }
           }
         });
 
@@ -1302,22 +1451,38 @@ Francesca Santoro	Pre-perfezionamento`;
             const secondPlaceTeams = standingsPerGirone
               .map((s) => s.standings[1])
               .filter(Boolean);
+            // 🔥 ORDINA I SECONDI (migliori secondi)
+            const sortedSecond = [...secondPlaceTeams].sort(
+              (a, b) => b.points - a.points || b.diff - a.diff,
+            );
+
+            let semifinalists = [];
+
+            // 👉 Se gironi dispari (3, 5...)
+            if (levelGironi.length % 2 !== 0) {
+              semifinalists = [...firstPlaceTeams, sortedSecond[0]].slice(0, 4);
+            } else {
+              semifinalists = [...firstPlaceTeams, ...secondPlaceTeams].slice(
+                0,
+                4,
+              );
+            }
 
             finalBracket[level] = {
               isSingleGirone: false,
               semifinals: [
                 {
                   id: "SF1_" + level,
-                  team1: firstPlaceTeams[0],
-                  team2: secondPlaceTeams[1] || secondPlaceTeams[0],
+                  team1: semifinalists[0],
+                  team2: semifinalists[3],
                   score1: null,
                   score2: null,
                   completed: false,
                 },
                 {
                   id: "SF2_" + level,
-                  team1: firstPlaceTeams[1] || firstPlaceTeams[0],
-                  team2: secondPlaceTeams[0],
+                  team1: semifinalists[1],
+                  team2: semifinalists[2],
                   score1: null,
                   score2: null,
                   completed: false,
@@ -1346,8 +1511,8 @@ Francesca Santoro	Pre-perfezionamento`;
         viewFinalBracket();
 
         document.getElementById("createBracketSection").innerHTML = `
-                <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
-            `;
+                      <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+                  `;
       };
 
       window.viewFinalBracket = function () {
@@ -1417,12 +1582,12 @@ Francesca Santoro	Pre-perfezionamento`;
 
             if (bracket.final.completed) {
               html += `
-                            <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                                <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
-                                <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
-                                <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
-                            </div>
-                        `;
+                                  <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                                      <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+                                      <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
+                                      <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
+                                  </div>
+                              `;
             }
           }
         } else {
@@ -1435,27 +1600,27 @@ Francesca Santoro	Pre-perfezionamento`;
             }
 
             html += `
-                        <div class="bracket-match">
-                            <div class="bracket-teams">
-                                <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
-                                    <div>${match.team1.name}</div>
-                                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}" 
-                                           value="${match.score1 !== null ? match.score1 : ""}" 
-                                           placeholder="0"
-                                           onchange="updateBracketScore('${match.id}', 1, this.value)">
-                                </div>
-                                <div class="bracket-vs">VS</div>
-                                <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
-                                    <div>${match.team2.name}</div>
-                                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}" 
-                                           value="${match.score2 !== null ? match.score2 : ""}" 
-                                           placeholder="0"
-                                           onchange="updateBracketScore('${match.id}', 2, this.value)">
-                                </div>
-                            </div>
-                            ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
-                        </div>
-                    `;
+                              <div class="bracket-match">
+                                  <div class="bracket-teams">
+                                      <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
+                                          <div>${match.team1.name}</div>
+                                          <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                                 value="${match.score1 !== null ? match.score1 : ""}"
+                                                 placeholder="0"
+                                                 onchange="updateBracketScore('${match.id}', 1, this.value)">
+                                      </div>
+                                      <div class="bracket-vs">VS</div>
+                                      <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
+                                          <div>${match.team2.name}</div>
+                                          <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                                 value="${match.score2 !== null ? match.score2 : ""}"
+                                                 placeholder="0"
+                                                 onchange="updateBracketScore('${match.id}', 2, this.value)">
+                                      </div>
+                                  </div>
+                                  ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
+                              </div>
+                          `;
           });
 
           // Finale (se le semifinali sono completate)
@@ -1525,27 +1690,27 @@ Francesca Santoro	Pre-perfezionamento`;
         if (!match.team1 || !match.team2) return "<p>Match non disponibile</p>";
 
         return `
-                <div class="bracket-match ${cssClass}">
-                    <div class="bracket-teams">
-                        <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
-                            <div>${match.team1.name}</div>
-                            <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}" 
-                                   value="${match.score1 !== null ? match.score1 : ""}" 
-                                   placeholder="0"
-                                   onchange="updateBracketScore('${match.id}', 1, this.value)">
-                        </div>
-                        <div class="bracket-vs">VS</div>
-                        <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
-                            <div>${match.team2.name}</div>
-                            <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}" 
-                                   value="${match.score2 !== null ? match.score2 : ""}" 
-                                   placeholder="0"
-                                   onchange="updateBracketScore('${match.id}', 2, this.value)">
-                        </div>
-                    </div>
-                    ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
-                </div>
-            `;
+                      <div class="bracket-match ${cssClass}">
+                          <div class="bracket-teams">
+                              <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
+                                  <div>${match.team1.name}</div>
+                                  <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                         value="${match.score1 !== null ? match.score1 : ""}"
+                                         placeholder="0"
+                                         onchange="updateBracketScore('${match.id}', 1, this.value)">
+                              </div>
+                              <div class="bracket-vs">VS</div>
+                              <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
+                                  <div>${match.team2.name}</div>
+                                  <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                         value="${match.score2 !== null ? match.score2 : ""}"
+                                         placeholder="0"
+                                         onchange="updateBracketScore('${match.id}', 2, this.value)">
+                              </div>
+                          </div>
+                          ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
+                      </div>
+                  `;
       }
 
       window.updateBracketScore = function (matchId, player, value) {

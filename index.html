@@ -686,13 +686,20 @@
           if (data) {
             if (data.gironi) {
               gironi = data.gironi;
+
+              // 🔥 FIX 1: Forza l'aggiornamento della classifica su tutti i telefoni/PC
+              updateStandings();
+
               if (currentLevel && gironi[currentLevel]) {
                 if (
                   !document
                     .getElementById("screen-tournament")
                     .classList.contains("hidden")
                 ) {
-                  renderGironi();
+                  // 🔥 FIX 2: Evita che la tastiera scompaia mentre un utente sta digitando un risultato
+                  if (document.activeElement.tagName !== "INPUT") {
+                    renderGironi();
+                  }
                 }
               } else if (Object.keys(gironi).length > 0) {
                 currentLevel = Object.keys(gironi)[0];
@@ -705,7 +712,20 @@
                   renderGironi();
                 }
               }
+
+              // 🔥 FIX 3: Se qualcuno sta guardando il tabellone del Livello 1, si aggiorna il podio da solo
+              if (
+                !document
+                  .getElementById("screen-bracket")
+                  .classList.contains("hidden")
+              ) {
+                // Anche qui, non disturbiamo chi sta digitando un punteggio nel tabellone finale
+                if (document.activeElement.tagName !== "INPUT") {
+                  renderBracket();
+                }
+              }
             }
+
             if (data.finalBracket) {
               finalBracket = data.finalBracket;
               if (
@@ -713,7 +733,9 @@
                   .getElementById("screen-bracket")
                   .classList.contains("hidden")
               ) {
-                renderBracket();
+                if (document.activeElement.tagName !== "INPUT") {
+                  renderBracket();
+                }
               }
             }
           }

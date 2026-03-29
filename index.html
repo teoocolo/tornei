@@ -683,60 +683,48 @@
         if (!torneoId) return;
         onValue(ref(database, "tornei/" + torneoId), (snapshot) => {
           const data = snapshot.val();
-          if (data) {
-            if (data.gironi) {
-              gironi = data.gironi;
+          if (!data) return;
 
-              // 🔥 FIX 1: Forza l'aggiornamento della classifica su tutti i telefoni/PC
-              updateStandings();
+          // 1. Aggiorna le variabili globali con i nuovi dati
+          if (data.gironi) {
+            gironi = data.gironi;
+          }
+          if (data.finalBracket) {
+            finalBracket = data.finalBracket;
+          }
+          if (data.players) {
+            players = data.players;
+          }
 
-              if (currentLevel && gironi[currentLevel]) {
-                if (
-                  !document
-                    .getElementById("screen-tournament")
-                    .classList.contains("hidden")
-                ) {
-                  // 🔥 FIX 2: Evita che la tastiera scompaia mentre un utente sta digitando un risultato
-                  if (document.activeElement.tagName !== "INPUT") {
-                    renderGironi();
-                  }
-                }
-              } else if (Object.keys(gironi).length > 0) {
-                currentLevel = Object.keys(gironi)[0];
-                if (
-                  !document
-                    .getElementById("screen-tournament")
-                    .classList.contains("hidden")
-                ) {
-                  renderTabs();
-                  renderGironi();
-                }
-              }
+          // 2. Ricalcola le classifiche in background per tutti
+          if (typeof updateStandings === "function") {
+            updateStandings();
+          }
 
-              // 🔥 FIX 3: Se qualcuno sta guardando il tabellone del Livello 1, si aggiorna il podio da solo
-              if (
-                !document
-                  .getElementById("screen-bracket")
-                  .classList.contains("hidden")
-              ) {
-                // Anche qui, non disturbiamo chi sta digitando un punteggio nel tabellone finale
-                if (document.activeElement.tagName !== "INPUT") {
-                  renderBracket();
-                }
-              }
+          // 3. Se l'utente sta guardando i gironi, aggiornali in diretta
+          const screenTournament = document.getElementById("screen-tournament");
+          if (
+            screenTournament &&
+            !screenTournament.classList.contains("hidden")
+          ) {
+            // Evita di aggiornare e far sparire la tastiera se sta scrivendo un punteggio
+            if (
+              document.activeElement.tagName !== "INPUT" &&
+              typeof renderGironi === "function"
+            ) {
+              renderGironi();
             }
+          }
 
-            if (data.finalBracket) {
-              finalBracket = data.finalBracket;
-              if (
-                !document
-                  .getElementById("screen-bracket")
-                  .classList.contains("hidden")
-              ) {
-                if (document.activeElement.tagName !== "INPUT") {
-                  renderBracket();
-                }
-              }
+          // 4. Se l'utente sta guardando il tabellone, aggiornalo in diretta
+          const screenBracket = document.getElementById("screen-bracket");
+          if (screenBracket && !screenBracket.classList.contains("hidden")) {
+            // Evita conflitti se sta scrivendo un punteggio delle finali
+            if (
+              document.activeElement.tagName !== "INPUT" &&
+              typeof renderBracket === "function"
+            ) {
+              renderBracket();
             }
           }
         });

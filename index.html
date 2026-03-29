@@ -1410,6 +1410,17 @@
         finalBracket = {};
 
         levels.forEach((level) => {
+          // 🔥 NOVITÀ: Se siamo al livello 1 (Torneo Giallo), non generiamo semifinali/finali
+          if (level === "1") {
+            finalBracket[level] = {
+              isGiallo: true, // Ci servirà per far capire alla vista di mostrare solo il podio
+              semifinals: [],
+              final: null,
+              thirdPlace: null,
+            };
+            return; // Salta il resto del codice ed evita di creare match per questo livello
+          }
+
           const levelGironi = gironi[level];
           const numGironi = levelGironi.length;
 
@@ -1511,8 +1522,8 @@
         viewFinalBracket();
 
         document.getElementById("createBracketSection").innerHTML = `
-                      <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
-                  `;
+      <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+  `;
       };
 
       window.viewFinalBracket = function () {
@@ -1571,6 +1582,64 @@
         const bracket = finalBracket[currentBracketLevel];
         let html = '<div class="bracket-container">';
 
+        // ==========================================
+        // 1. GESTIONE LIVELLO 1 (GIALLO) IN TEMPO REALE
+        // ==========================================
+        if (currentBracketLevel == 1 || currentBracketLevel == "1") {
+          const levelGironi = gironi["1"];
+          if (!levelGironi || levelGironi.length === 0) {
+            document.getElementById("bracketContainer").innerHTML =
+              "<p>Nessun dato per il Girone Giallo.</p>";
+            return;
+          }
+
+          const gironeGiallo = levelGironi[0];
+          // Ricalcoliamo la classifica al volo dai match salvati per averla in diretta!
+          const standings = calculateStandings(gironeGiallo);
+
+          html += `
+      <div style="text-align: center; margin: 20px auto; max-width: 500px; padding: 25px; background: linear-gradient(135deg, #fffdf0 0%, #fff9db 100%); border-radius: 12px; border: 2px solid #ffd700;">
+        <div style="font-size: 2.5rem; margin-bottom: 5px;">🏆</div>
+        <div style="font-size: 1.4rem; font-weight: bold; color: #d4af37; margin-bottom: 20px;">Podio Finale - Livello Avviamento</div>
+        
+        <div style="display: flex; justify-content: space-around; align-items: center; gap: 15px;">
+          
+          <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); min-width: 160px; border: 1px solid #ffe066;">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🥇</div>
+            <div style="font-weight: bold; color: #333;">1° Posto</div>
+            <div style="color: #667eea; font-weight: bold; font-size: 1.2rem; margin: 5px 0;">
+              ${standings[0] ? standings[0].name : "In corso..."}
+            </div>
+            <div style="font-size: 0.85rem; color: #777;">
+              ${standings[0] ? standings[0].points : 0} Punti
+            </div>
+          </div>
+
+          <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); min-width: 160px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🥈</div>
+            <div style="font-weight: bold; color: #333;">2° Posto</div>
+            <div style="color: #667eea; font-weight: bold; font-size: 1.2rem; margin: 5px 0;">
+              ${standings[1] ? standings[1].name : "In corso..."}
+            </div>
+            <div style="font-size: 0.85rem; color: #777;">
+              ${standings[1] ? standings[1].points : 0} Punti
+            </div>
+          </div>
+
+        </div>
+        <p style="color: #a0aec0; font-size: 0.8rem; margin-top: 20px;">La classifica calcola le vittorie in tempo reale man mano che inserisci i punteggi.</p>
+      </div>
+    `;
+
+          html += "</div>";
+          document.getElementById("bracketContainer").innerHTML = html;
+          return; // Blocchiamo qui l'esecuzione per il livello 1
+        }
+
+        // ==========================================
+        // 2. GESTIONE LIVELLI 2, 3, 4 (CON SEMIFINALI E FINALI)
+        // ==========================================
+
         // CASO GIRONE UNICO
         if (bracket.isSingleGirone) {
           html +=
@@ -1582,12 +1651,12 @@
 
             if (bracket.final.completed) {
               html += `
-                                  <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                                      <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
-                                      <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
-                                      <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
-                                  </div>
-                              `;
+          <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+              <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+              <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
+              <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
+          </div>
+        `;
             }
           }
         } else {
@@ -1600,27 +1669,27 @@
             }
 
             html += `
-                              <div class="bracket-match">
-                                  <div class="bracket-teams">
-                                      <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
-                                          <div>${match.team1.name}</div>
-                                          <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
-                                                 value="${match.score1 !== null ? match.score1 : ""}"
-                                                 placeholder="0"
-                                                 onchange="updateBracketScore('${match.id}', 1, this.value)">
-                                      </div>
-                                      <div class="bracket-vs">VS</div>
-                                      <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
-                                          <div>${match.team2.name}</div>
-                                          <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
-                                                 value="${match.score2 !== null ? match.score2 : ""}"
-                                                 placeholder="0"
-                                                 onchange="updateBracketScore('${match.id}', 2, this.value)">
-                                      </div>
-                                  </div>
-                                  ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
-                              </div>
-                          `;
+        <div class="bracket-match">
+            <div class="bracket-teams">
+                <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
+                    <div>${match.team1.name}</div>
+                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                           value="${match.score1 !== null ? match.score1 : ""}"
+                           placeholder="0"
+                           onchange="updateBracketScore('${match.id}', 1, this.value)">
+                </div>
+                <div class="bracket-vs">VS</div>
+                <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
+                    <div>${match.team2.name}</div>
+                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                           value="${match.score2 !== null ? match.score2 : ""}"
+                           placeholder="0"
+                           onchange="updateBracketScore('${match.id}', 2, this.value)">
+                </div>
+            </div>
+            ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
+        </div>
+      `;
           });
 
           // Finale (se le semifinali sono completate)

@@ -556,16 +556,28 @@
             players = data.players || [];
             gironi = data.gironi || {};
             finalBracket = data.finalBracket || {};
+            
             if (Object.keys(gironi).length > 0) {
+              // Nasconde la schermata di importazione
+              document.getElementById("screen-import").classList.add("hidden");
+              document.getElementById("screen-players").classList.add("hidden");
+              
+              // Attiva i listener in tempo reale e mostra il torneo
               ascoltaAggiornamenti();
               showTournament();
+      
+              // Se esiste un tabellone finale, aggiorna il pulsante
               if (Object.keys(finalBracket).length > 0) {
                 document.getElementById("createBracketSection").innerHTML = `
                   <button class="btn btn-secondary" onclick="window.viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
                 `;
               }
             }
+          } else {
+            alert("Torneo non trovato o link non valido.");
           }
+        }).catch((error) => {
+          console.error("Errore nel caricamento del torneo:", error);
         });
       }
 

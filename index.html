@@ -1,1156 +1,1708 @@
 <!doctype html>
 <html lang="it">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Tennis Tournament Manager - Live</title>
+
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: #01403f;
-        min-height: 100vh;
-        padding: 10px;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-      }
-      .header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
-        padding: 10px;
-      }
-      .logo {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        flex-shrink: 0;
-      }
-      .header-text h1 {
-        color: white;
-        font-size: 1.4rem;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      }
-      .header-text p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 0.9rem;
-        margin: 5px 0 0 0;
-      }
-      .card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      }
-      h2 {
-        color: #667eea;
-        margin-bottom: 15px;
-        font-size: 1.3rem;
-      }
-      .btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 10px;
-        font-size: 16px;
-        cursor: pointer;
-        width: 100%;
-        margin: 10px 0;
-        transition: transform 0.2s, box-shadow 0.2s;
-      }
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-      }
-      .btn-secondary { background: #48bb78; }
-      .btn-warning { background: #ed8936; }
-      .input-group { margin: 15px 0; }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: 600;
-      }
-      textarea {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 16px;
-        min-height: 150px;
-      }
-      .live-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #48bb78;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        margin-bottom: 15px;
-      }
-      .live-dot {
-        width: 8px;
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-      }
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-      }
-      .share-box {
-        background: #f7fafc;
-        border: 2px dashed #667eea;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-        text-align: center;
-      }
-      .share-url {
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        font-family: monospace;
-        font-size: 0.9rem;
-        word-break: break-all;
-        margin: 10px 0;
-        border: 1px solid #e2e8f0;
-      }
-      .player-list { margin: 20px 0; }
-      .player-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px;
-        background: #f7fafc;
-        border-radius: 8px;
-        margin-bottom: 8px;
-      }
-      .level-badge {
-        background: #667eea;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: bold;
-      }
-      .girone-card {
-        background: #f7fafc;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-left: 4px solid #667eea;
-      }
-      .girone-title {
-        font-weight: bold;
-        color: #2d3748;
-        margin-bottom: 10px;
-        font-size: 1rem;
-      }
-      .match-row {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr auto;
-        gap: 10px;
-        align-items: center;
-        padding: 12px;
-        background: white;
-        border-radius: 8px;
-        margin-bottom: 8px;
-      }
-      .match-player {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 0.95rem;
-      }
-      .match-score {
-        width: 55px;
-        text-align: center;
-        font-size: 1.1rem;
-        font-weight: bold;
-        border: 2px solid #cbd5e0;
-        border-radius: 6px;
-        padding: 8px;
-      }
-      .match-score:focus {
-        border-color: #667eea;
-        outline: none;
-      }
-      .match-score.completed {
-        border-color: #48bb78;
-        background: #f0fff4;
-      }
-      .standings {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        font-size: 0.9rem;
-      }
-      .standings th, .standings td {
-        padding: 8px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-      }
-      .standings th {
-        color: #667eea;
-        font-weight: 600;
-      }
-      .standings tr:hover { background: #f7fafc; }
-      .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        overflow-x: auto;
-        padding-bottom: 5px;
-      }
-      .tab {
-        padding: 10px 20px;
-        background: #e2e8f0;
-        border-radius: 20px;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.3s;
-        font-size: 0.9rem;
-      }
-      .tab.active {
-        background: #667eea;
-        color: white;
-      }
-      .hidden { display: none; }
-      .import-info {
-        background: #e6fffa;
-        border: 1px solid #81e6d9;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        font-size: 0.9rem;
-        color: #234e52;
-      }
-      .bracket-container {
-        background: #f7fafc;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
-      }
-      .bracket-title {
-        font-size: 1.2rem;
-        color: #667eea;
-        font-weight: bold;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .bracket-match {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 15px;
-        border: 2px solid #e2e8f0;
-        position: relative;
-      }
-      .bracket-match::before {
-        content: "SEMIFINALE";
-        position: absolute;
-        top: -10px;
-        left: 20px;
-        background: #667eea;
-        color: white;
-        padding: 2px 10px;
-        border-radius: 10px;
-        font-size: 0.7rem;
-        font-weight: bold;
-      }
-      .bracket-match.single-girone::before,
-      .bracket-match.finals::before {
-        content: "FINALE";
-        background: #ed8936;
-      }
-      .bracket-match.third::before {
-        content: "3° POSTO";
-        background: #48bb78;
-      }
-      .bracket-teams {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-      }
-      .bracket-team {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        border-radius: 8px;
-        background: #f7fafc;
-        font-weight: 600;
-      }
-      .bracket-team.winner {
-        background: #c6f6d5;
-        color: #22543d;
-      }
-      .bracket-vs {
-        font-weight: bold;
-        color: #667eea;
-        font-size: 1.2rem;
-      }
-      .bracket-score-input {
-        width: 60px;
-        text-align: center;
-        font-size: 1.1rem;
-        font-weight: bold;
-        border: 2px solid #cbd5e0;
-        border-radius: 6px;
-        padding: 8px;
-        margin-top: 5px;
-      }
-      .bracket-score-input.completed {
-        border-color: #48bb78;
-        background: #f0fff4;
-      }
-      .bracket-result {
-        text-align: center;
-        margin-top: 10px;
-        font-size: 0.9rem;
-        color: #666;
-      }
-      .single-girone-info {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 15px;
-        text-align: center;
-        color: #92400e;
-        font-size: 0.9rem;
-      }
-
-      @media (max-width: 600px) {
-        body { padding: 5px; }
-        .header { padding: 5px; margin-bottom: 10px; }
-        .logo { width: 50px; height: 50px; font-size: 1.5rem; }
-        .header-text h1 { font-size: 1.1rem; }
-        .header-text p { font-size: 0.8rem; }
-        .card { padding: 15px; border-radius: 15px; }
-        .match-row {
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: auto auto;
-          gap: 8px;
-          padding: 12px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .match-row .match-player:first-child { grid-column: 1; grid-row: 1; text-align: left; }
-        .match-row input:first-of-type { grid-column: 1; grid-row: 2; width: 100%; }
-        .match-row .match-player:last-of-type { grid-column: 2; grid-row: 1; text-align: right; }
-        .match-row input:last-of-type { grid-column: 2; grid-row: 2; width: 100%; }
-        .match-score { width: 100%; font-size: 1.2rem; padding: 10px; }
-        .match-player { font-size: 0.9rem; }
-        .girone-card { padding: 12px; }
-        .standings { font-size: 0.85rem; }
-        .standings th, .standings td { padding: 6px 4px; }
-        .tab { padding: 8px 15px; font-size: 0.85rem; }
-        .bracket-teams { flex-direction: column; gap: 10px; }
-        .bracket-vs { transform: rotate(90deg); }
-      }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #01403f;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            color: white;
+            font-size: 1.4rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-text p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin: 5px 0 0 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            min-height: 150px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #48bb78;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .share-box {
+            background: #f7fafc;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .share-url {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .player-list {
+            margin: 20px 0;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .level-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .girone-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .girone-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        /* STILI PER DRAG & DROP NATIVO */
+        .drop-zone {
+            min-height: 65px;
+            background: #edf2f7;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px dashed #cbd5e0;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            background: #ebf4ff;
+            border-color: #667eea;
+        }
+
+        .draggable-player {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: grab;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .draggable-player:last-child {
+            margin-bottom: 0;
+        }
+
+        .draggable-player:active {
+            cursor: grabbing;
+        }
+
+        .draggable-player.dragging {
+            opacity: 0.45;
+            border: 2px dashed #667eea;
+        }
+
+        .drag-handle {
+            color: #a0aec0;
+            margin-right: 10px;
+            font-size: 1.2rem;
+            cursor: grab;
+        }
+
+        .move-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            background: #f7fafc;
+            font-size: 0.8rem;
+            color: #4a5568;
+            cursor: pointer;
+        }
+
+        /* MATCH ROW - VERSIONE DESKTOP */
+        .match-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .match-player {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .match-score {
+            width: 55px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .match-score:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .match-score.completed {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .standings {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .standings th,
+        .standings td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .standings th {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .standings tr:hover {
+            background: #f7fafc;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .import-info {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #234e52;
+        }
+
+        /* STILI PER IL TABELLONE FINALE */
+        .bracket-container {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .bracket-title {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .bracket-match {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+        }
+
+        .bracket-match::before {
+            content: "SEMIFINALE";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .bracket-match.single-girone::before,
+        .bracket-match.finals::before {
+            content: "FINALE";
+            background: #ed8936;
+        }
+
+        .bracket-match.third::before {
+            content: "3° POSTO";
+            background: #48bb78;
+        }
+
+        .bracket-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bracket-team {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f7fafc;
+            font-weight: 600;
+        }
+
+        .bracket-team.winner {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .bracket-vs {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        .bracket-score-input {
+            width: 60px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        .bracket-score-input.completed {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .bracket-result {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .single-girone-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            .header { padding: 5px; margin-bottom: 10px; }
+            .logo { width: 50px; height: 50px; font-size: 1.5rem; }
+            .header-text h1 { font-size: 1.1rem; }
+            .header-text p { font-size: 0.8rem; }
+            .card { padding: 15px; border-radius: 15px; }
+
+            .match-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto;
+                gap: 8px;
+                padding: 12px;
+            }
+            .match-row .match-player:first-child { grid-column: 1; grid-row: 1; text-align: left; }
+            .match-row input:first-of-type { grid-column: 1; grid-row: 2; width: 100%; }
+            .match-row .match-player:last-of-type { grid-column: 2; grid-row: 1; text-align: right; }
+            .match-row input:last-of-type { grid-column: 2; grid-row: 2; width: 100%; }
+            .match-score { width: 100%; font-size: 1.2rem; padding: 10px; }
+            .match-player { font-size: 0.9rem; }
+            .girone-card { padding: 12px; }
+            .standings { font-size: 0.85rem; }
+            .standings th, .standings td { padding: 6px 4px; }
+            .tab { padding: 8px 15px; font-size: 0.85rem; }
+            .bracket-teams { flex-direction: column; gap: 10px; }
+            .bracket-vs { transform: rotate(90deg); }
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="container">
-      <div class="header">
-        <div class="logo">🎾</div>
-        <div class="header-text">
-          <h1>Tennis Tournament Manager</h1>
-          <p>Gestione tornei per livello</p>
-        </div>
-      </div>
-
-      <!-- SCHERMATA IMPORT -->
-      <div id="screen-import" class="card">
-        <h2>📋 Importazione Iscritti</h2>
-        <div class="import-info">
-          <strong>Come importare da Google Sheets:</strong><br />
-          1. Seleziona le colonne <strong>Nome</strong> e <strong>Livello</strong><br />
-          2. Copia (Ctrl+C) e incolla nell'area di testo qui sotto (Ctrl+V)<br /><br />
-          <em>I livelli vengono convertiti in automatico:<br />
-          Avviamento → 1 | Pre-perfezionamento → 2 | Perfezionamento → 3 | Specializzazione → 4</em>
+        <div class="header">
+            <img src="logo.png" alt="Logo" />
+            <div class="header-text">
+                <h1>Tennis Tournament Manager</h1>
+                <p>Gestione tornei di singolare per livello</p>
+            </div>
         </div>
 
-        <div class="input-group">
-          <label>Incolla dati da Google Sheets</label>
-          <textarea
-            id="sheetData"
-            placeholder="Mario Rossi, Avviamento&#10;Luigi Bianchi, Pre-perfezionamento&#10;Mario / Luigi, Perfezionamento"
-          ></textarea>
+        <div id="screen-import" class="card">
+            <h2>📋 Importazione Iscritti</h2>
+
+            <div class="import-info">
+                <strong>Come importare da Google Sheets:</strong><br />
+                1. Apri il tuo foglio Google<br />
+                2. Seleziona le colonne <strong>Nome</strong> e
+                <strong>Livello</strong><br />
+                3. Copia (Ctrl+C) e incolla qui sotto (Ctrl+V)<br /><br />
+                <em>I livelli verranno convertiti automaticamente:<br />
+                    Avviamento → 1 | Pre-perfezionamento → 2 | Perfezionamento → 3 |
+                    Specializzazione → 4</em>
+            </div>
+
+            <div class="input-group">
+                <label>Incolla dati da Google Sheets</label>
+                <textarea id="sheetData"
+                    placeholder="Mario Rossi, Avviamento&#10;Luigi Bianchi, Pre-perfezionamento&#10;Anna Verdi, Perfezionamento&#10;..."></textarea>
+            </div>
+
+            <button class="btn" onclick="importPlayers()">
+                📥 Carica Iscritti
+            </button>
+            <button class="btn btn-secondary" onclick="loadDemoData()">
+                🎮 Dati Demo (11 giocatori)
+            </button>
         </div>
 
-        <div style="margin-bottom: 15px;">
-          <input type="radio" name="tipo" id="singolo" checked /> <label for="singolo" style="display:inline;">Singoli</label> &nbsp;&nbsp;
-          <input type="radio" name="tipo" id="doppio" /> <label for="doppio" style="display:inline;">Doppio</label>
+        <div id="screen-players" class="card hidden">
+            <h2>👥 Iscritti per Livello</h2>
+            <div id="playersByLevel"></div>
+            <button class="btn btn-secondary" onclick="generateTournament()">
+                ⚡ Genera Gironi
+            </button>
         </div>
 
-        <button class="btn" onclick="window.importPlayers()">📥 Carica Iscritti</button>
-        <button class="btn btn-secondary" onclick="window.loadDemoData()">🎮 Dati Demo (8 Partecipanti)</button>
-      </div>
-
-      <!-- SCHERMATA ISCRITTI -->
-      <div id="screen-players" class="card hidden">
-        <h2>👥 Iscritti per Livello</h2>
-        <div id="playersByLevel"></div>
-        <button class="btn btn-secondary" onclick="window.generateTournament()">⚡ Genera Gironi & Crea Torneo</button>
-      </div>
-
-      <!-- SCHERMATA TORNEO -->
-      <div id="screen-tournament" class="card hidden">
-        <div class="live-indicator">
-          <div class="live-dot"></div>
-          <span>LIVE - Aggiornamenti in tempo reale</span>
+        <!-- SCHERMATA REVISIONE GIRONI CON DRAG & DROP NATIVO -->
+        <div id="screen-edit-gironi" class="card hidden">
+            <h2>🔄 Revisione Gironi</h2>
+            <p style="color: #4a5568; margin-bottom: 15px; font-size: 0.95rem;">
+                Trascina i giocatori tra i gironi dello stesso livello (oppure usa il menu a tendina accanto al nome su telefono) per riorganizzarli prima di generare le partite.
+            </p>
+            <div id="editGironiContainer"></div>
+            <button class="btn btn-warning" onclick="confirmGironi()">
+                ✅ Conferma e Genera Partite
+            </button>
+            <button class="btn btn-secondary" onclick="annullaGironi()">
+                🔙 Torna agli Iscritti
+            </button>
         </div>
-        <div id="shareSection" class="share-box hidden">
-          <div style="font-weight: bold; color: #667eea; margin-bottom: 10px">🔗 Condividi questo link</div>
-          <div class="share-url" id="shareUrl"></div>
-          <button class="btn" onclick="window.copiaLink()" style="margin: 0">📋 Copia Link</button>
-        </div>
-        <h2>🎯 Gironi e Partite</h2>
-        <div class="tabs" id="levelTabs"></div>
-        <div id="gironiContainer"></div>
 
-        <div id="createBracketSection" style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #cbd5e0;">
-          <button class="btn btn-warning" onclick="window.createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
-        </div>
-      </div>
+        <div id="screen-tournament" class="card hidden">
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>LIVE - Aggiornamenti in tempo reale</span>
+            </div>
+            <div id="shareSection" class="share-box hidden">
+                <div style="font-weight: bold; color: #667eea; margin-bottom: 10px">
+                    🔗 Condividi questo link
+                </div>
+                <div class="share-url" id="shareUrl"></div>
+                <button class="btn" onclick="copiaLink()" style="margin: 0">
+                    📋 Copia Link
+                </button>
+            </div>
+            <h2>🎯 Gironi e Partite</h2>
+            <div class="tabs" id="levelTabs"></div>
+            <div id="gironiContainer"></div>
 
-      <!-- SCHERMATA TABELLONE FINALE -->
-      <div id="screen-bracket" class="card hidden">
-        <h2>🏆 Tabellone Finale</h2>
-        <div class="tabs" id="bracketLevelTabs"></div>
-        <div id="bracketContainer"></div>
-        <div style="margin-top: 20px; text-align: center">
-          <button class="btn btn-secondary" onclick="window.backToGironi()">← Torna ai Gironi</button>
+            <div id="createBracketSection" style="
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #cbd5e0;
+          ">
+                <button class="btn btn-warning" onclick="createFinalBracket()">
+                    🏆 Gironi Terminati - Crea Tabellone Finale
+                </button>
+                <p style="
+              text-align: center;
+              color: #666;
+              font-size: 0.9rem;
+              margin-top: 10px;
+            ">
+                    Clicca quando tutte le partite dei gironi sono terminate per
+                    generare le semifinali o la finale
+                </p>
+            </div>
         </div>
-      </div>
 
-      <!-- SCHERMATA CLASSIFICHE -->
-      <div id="screen-standings" class="card hidden">
-        <h2>📊 Classifiche Live</h2>
-        <div id="standingsContainer"></div>
-      </div>
+        <div id="screen-bracket" class="card hidden">
+            <h2>🏆 Tabellone Finale</h2>
+            <div class="tabs" id="bracketLevelTabs"></div>
+            <div id="bracketContainer"></div>
+
+            <div style="margin-top: 20px; text-align: center">
+                <button class="btn btn-secondary" onclick="backToGironi()">
+                    ← Torna ai Gironi
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-standings" class="card hidden">
+            <h2>📊 Classifiche Live</h2>
+            <div id="standingsContainer"></div>
+        </div>
     </div>
 
-    <!-- SCRIPT FIREBASE CON ESPOSIZIONE GLOBALE SU WINDOW -->
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-      import {
-        getDatabase,
-        ref,
-        set,
-        update,
-        onValue,
-        get
-      } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+        import {initializeApp} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import {
+            getDatabase,
+            ref,
+            set,
+            update,
+            onValue,
+            get,
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyAIFRcI8sbn8zkqTFltKEukBzCpcRMrVKM",
-        authDomain: "tabellone-tennis.firebaseapp.com",
-        databaseURL: "https://tabellone-tennis-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "tabellone-tennis",
-        storageBucket: "tabellone-tennis.firebasestorage.app",
-        messagingSenderId: "171990326298",
-        appId: "1:171990326298:web:fecec0979d6bfd2fb745a3"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-
-      let players = [];
-      let gironi = {};
-      let currentLevel = null;
-      let torneoId = null;
-      let finalBracket = {};
-      let currentBracketLevel = null;
-
-      function getTipoTorneo() {
-        return document.getElementById("doppio").checked ? "doppio" : "singolo";
-      }
-
-      function convertiLivello(livelloTesto) {
-        const testo = livelloTesto.toString().toLowerCase().trim();
-        if (testo.includes("avviamento")) return 1;
-        if (testo.includes("pre") && testo.includes("perfezionamento")) return 2;
-        if (testo.includes("perfezionamento") && !testo.includes("pre")) return 3;
-        if (testo.includes("specializzazione")) return 4;
-
-        const num = parseInt(testo);
-        if (!isNaN(num) && num >= 1 && num <= 4) return num;
-        return 1;
-      }
-
-      function getLevelName(level) {
-        const nomiLivelli = {
-          1: "Avviamento",
-          2: "Pre-perfezionamento",
-          3: "Perfezionamento",
-          4: "Specializzazione"
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIFRcI8sbn8zkqTFltKEukBzCpcRMrVKM",
+            authDomain: "tabellone-tennis.firebaseapp.com",
+            databaseURL:
+                "https://tabellone-tennis-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "tabellone-tennis",
+            storageBucket: "tabellone-tennis.firebasestorage.app",
+            messagingSenderId: "171990326298",
+            appId: "1:171990326298:web:fecec0979d6bfd2fb745a3",
         };
-        return nomiLivelli[level] || "Livello " + level;
-      }
 
-      function ascoltaAggiornamenti() {
-        if (!torneoId) return;
-        onValue(ref(database, "tornei/" + torneoId), (snapshot) => {
-          const data = snapshot.val();
-          if (!data) return;
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-          if (data.gironi) gironi = data.gironi;
-          if (data.finalBracket) finalBracket = data.finalBracket;
-          if (data.players) players = data.players;
+        let players = [];
+        let gironi = {};
+        let currentLevel = null;
+        let torneoId = null;
+        let finalBracket = {};
+        let currentBracketLevel = null;
 
-          updateStandings();
+        // Variabile per tracciare l'elemento trascinato
+        let draggedPlayerInfo = null;
 
-          const screenTournament = document.getElementById("screen-tournament");
-          if (screenTournament && !screenTournament.classList.contains("hidden")) {
-            if (document.activeElement.tagName !== "INPUT") {
-              renderGironi();
-            }
-          }
-
-          const screenBracket = document.getElementById("screen-bracket");
-          if (screenBracket && !screenBracket.classList.contains("hidden")) {
-            if (document.activeElement.tagName !== "INPUT") {
-              renderBracket();
-            }
-          }
-        });
-      }
-
-      function salvaSuFirebase() {
-        if (!torneoId) return;
-        update(ref(database, "tornei/" + torneoId), {
-          gironi: gironi,
-          finalBracket: finalBracket,
-          ultimoAggiornamento: new Date().toISOString()
-        });
-      }
-
-      function caricaTorneo(id) {
-        torneoId = id;
-        get(ref(database, "tornei/" + id)).then((snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            players = data.players || [];
-            gironi = data.gironi || {};
-            finalBracket = data.finalBracket || {};
-            
-            if (Object.keys(gironi).length > 0) {
-              // Nasconde la schermata di importazione
-              document.getElementById("screen-import").classList.add("hidden");
-              document.getElementById("screen-players").classList.add("hidden");
-              
-              // Attiva i listener in tempo reale e mostra il torneo
-              ascoltaAggiornamenti();
-              showTournament();
-      
-              // Se esiste un tabellone finale, aggiorna il pulsante
-              if (Object.keys(finalBracket).length > 0) {
-                document.getElementById("createBracketSection").innerHTML = `
-                  <button class="btn btn-secondary" onclick="window.viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
-                `;
-              }
-            }
-          } else {
-            alert("Torneo non trovato o link non valido.");
-          }
-        }).catch((error) => {
-          console.error("Errore nel caricamento del torneo:", error);
-        });
-      }
-
-      window.loadDemoData = function () {
-        const demoData = `Giuseppe Russo, Pre-perfezionamento
-Matteo Ferrari, Pre-perfezionamento
-Davide Esposito, Pre-perfezionamento
-Andrea Bianchi, Pre-perfezionamento
-Stefano Romani, Pre-perfezionamento
-Gabriele Costa, Pre-perfezionamento
-Lorenzo Bruno, Pre-perfezionamento
-Federico Galli, Pre-perfezionamento`;
-
-        document.getElementById("sheetData").value = demoData;
-        window.importPlayers();
-      };
-
-      window.importPlayers = function () {
-        const data = document.getElementById("sheetData").value.trim();
-        if (!data) {
-          alert("Inserisci i dati!");
-          return;
-        }
-
-        const tipoGlobal = getTipoTorneo();
-        const lines = data.split("\n");
-        let rawPlayers = [];
-
-        lines.forEach((line) => {
-          const parts = line.split(",");
-          if (parts.length >= 2) {
-            const nome = parts[0].trim();
-            const livelloNumero = convertiLivello(parts[1].trim());
-            if (nome) rawPlayers.push({ name: nome, level: livelloNumero });
-          }
-        });
-
-        players = [];
-        let giocatoriPerLivello = {};
-
-        rawPlayers.forEach((p) => {
-          if (!giocatoriPerLivello[p.level]) giocatoriPerLivello[p.level] = [];
-          giocatoriPerLivello[p.level].push(p);
-        });
-
-        Object.keys(giocatoriPerLivello).forEach((levelStr) => {
-          const level = parseInt(levelStr);
-          const lista = giocatoriPerLivello[level];
-
-          if (tipoGlobal === "doppio") {
-            let giaCoppie = [];
-            let singoliDaAccoppiare = [];
-
-            lista.forEach((p) => {
-              if (p.name.includes("/")) giaCoppie.push(p);
-              else singoliDaAccoppiare.push(p);
-            });
-
-            giaCoppie.forEach((p) => {
-              players.push({
-                id: "pair-" + Math.random().toString(36).substr(2, 9),
-                name: p.name,
-                level: level
-              });
-            });
-
-            const shuffled = [...singoliDaAccoppiare].sort(() => Math.random() - 0.5);
-            for (let i = 0; i < shuffled.length; i += 2) {
-              if (i + 1 < shuffled.length) {
-                players.push({
-                  id: "pair-" + Math.random().toString(36).substr(2, 9),
-                  name: shuffled[i].name + " / " + shuffled[i + 1].name,
-                  level: level
+        function caricaTorneo(id) {
+            torneoId = id;
+            get(ref(database, "tornei/" + id))
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        players = data.players || [];
+                        gironi = data.gironi || {};
+                        finalBracket = data.finalBracket || {};
+                        if (Object.keys(gironi).length > 0) {
+                            showTournament();
+                            if (Object.keys(finalBracket).length > 0) {
+                                document.getElementById("createBracketSection").innerHTML = `
+                                      <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
+                                  `;
+                            }
+                        } else {
+                            alert(
+                                "Torneo trovato ma senza gironi. Ricarica la pagina e crea un nuovo torneo.",
+                            );
+                        }
+                    } else {
+                        alert("Torneo non trovato!");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Errore caricamento torneo:", error);
+                    alert("Errore nel caricamento del torneo");
                 });
-              } else {
-                players.push({
-                  id: "p-" + Math.random().toString(36).substr(2, 9),
-                  name: shuffled[i].name + " (Cerca compagno)",
-                  level: level
-                });
-              }
+        }
+
+        function ascoltaAggiornamenti() {
+            if (!torneoId) return;
+            onValue(ref(database, "tornei/" + torneoId), (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                if (data.gironi) gironi = data.gironi;
+                if (data.finalBracket) finalBracket = data.finalBracket;
+                if (data.players) players = data.players;
+
+                if (typeof updateStandings === "function") {
+                    updateStandings();
+                }
+
+                const screenTournament = document.getElementById("screen-tournament");
+                if (
+                    screenTournament &&
+                    !screenTournament.classList.contains("hidden")
+                ) {
+                    if (
+                        document.activeElement.tagName !== "INPUT" &&
+                        typeof renderGironi === "function"
+                    ) {
+                        renderGironi();
+                    }
+                }
+
+                const screenBracket = document.getElementById("screen-bracket");
+                if (screenBracket && !screenBracket.classList.contains("hidden")) {
+                    if (
+                        document.activeElement.tagName !== "INPUT" &&
+                        typeof renderBracket === "function"
+                    ) {
+                        renderBracket();
+                    }
+                }
+            });
+        }
+
+        function salvaSuFirebase() {
+            if (!torneoId) return;
+            update(ref(database, "tornei/" + torneoId), {
+                gironi: gironi,
+                finalBracket: finalBracket,
+                ultimoAggiornamento: new Date().toISOString(),
+            });
+        }
+
+        function convertiLivello(livelloTesto) {
+            const testo = livelloTesto.toString().toLowerCase().trim();
+
+            if (testo.includes("avviamento")) return 1;
+            if (testo.includes("pre") && testo.includes("perfezionamento"))
+                return 2;
+            if (testo.includes("perfezionamento") && !testo.includes("pre"))
+                return 3;
+            if (testo.includes("specializzazione")) return 4;
+
+            const num = parseInt(testo);
+            if (!isNaN(num) && num >= 1 && num <= 4) return num;
+
+            return 1;
+        }
+
+        function loadDemoData() {
+            const demoData = `Marco Rossi, Avviamento
+        Luca Verdi, Avviamento
+        Anna Bianchi, Avviamento
+        Matteo Romano, Avviamento
+        Sara Colombo, Avviamento
+        Tommaso Ricci, Avviamento
+        Elena Marino, Avviamento
+        Roberto Fontana, Pre-perfezionamento
+        Martina Moretti, Pre-perfezionamento
+        Simone Greco, Pre-perfezionamento
+        Francesca Santoro, Pre-perfezionamento`;
+
+            document.getElementById("sheetData").value = demoData;
+            importPlayers();
+        }
+
+        function importPlayers() {
+            const data = document.getElementById("sheetData").value.trim();
+            if (!data) {
+                alert("Inserisci i dati!");
+                return;
             }
-          } else {
-            lista.forEach((p) => {
-              players.push({
-                id: "p-" + Math.random().toString(36).substr(2, 9),
-                name: p.name,
-                level: level
-              });
+
+            const lines = data.split("\n");
+            players = [];
+
+            lines.forEach((line) => {
+                const parts = line.includes("\t") ? line.split("\t") : line.split(",");
+                if (parts.length >= 2) {
+                    const nome = parts[0].trim();
+                    const livelloNumero = convertiLivello(parts[1].trim());
+                    if (nome) {
+                        players.push({
+                            id: "p-" + Math.random().toString(36).substr(2, 9),
+                            name: nome,
+                            level: livelloNumero,
+                        });
+                    }
+                }
             });
-          }
-        });
 
-        if (players.length === 0) {
-          alert("Nessun giocatore caricato. Controlla il formato!");
-          return;
+            if (players.length === 0) {
+                alert(
+                    "Nessun giocatore caricato. Controlla che nomi e livelli siano separati correttamente!",
+                );
+                return;
+            }
+
+            showPlayersByLevel();
         }
 
-        showPlayersByLevel();
-      };
+        function showPlayersByLevel() {
+            const levels = [...new Set(players.map((p) => p.level))].sort();
+            let html = "";
 
-      function showPlayersByLevel() {
-        const levels = [...new Set(players.map((p) => p.level))].sort();
-        let html = "";
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
+            };
 
-        levels.forEach((level) => {
-          const levelPlayers = players.filter((p) => p.level === level);
-          html += `
-            <div style="margin-bottom: 20px;">
-              <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${getLevelName(level)} - ${levelPlayers.length} partecipanti</h3>
-              <div class="player-list">
-                ${levelPlayers.map((p) => `
-                  <div class="player-item">
-                    <span>${p.name}</span>
-                    <span class="level-badge">L${p.level}</span>
-                  </div>
-                `).join("")}
-              </div>
-            </div>
-          `;
-        });
-
-        document.getElementById("playersByLevel").innerHTML = html;
-        document.getElementById("screen-import").classList.add("hidden");
-        document.getElementById("screen-players").classList.remove("hidden");
-      }
-
-      window.generateTournament = function () {
-        const levels = [...new Set(players.map((p) => p.level))].sort();
-        gironi = {};
-
-        levels.forEach((l) => {
-          const lp = players.filter((p) => p.level === l);
-          gironi[l] = [];
-
-          const coppieTotali = lp.length;
-          const shuffledCoppie = [...lp].sort(() => Math.random() - 0.5);
-
-          const numeroGironi = Math.ceil(coppieTotali / 5);
-          const dimensioneBase = Math.floor(coppieTotali / numeroGironi);
-          let resto = coppieTotali % numeroGironi;
-
-          let indiceCorrente = 0;
-
-          for (let i = 0; i < numeroGironi; i++) {
-            const dimensioneGirone = dimensioneBase + (resto > 0 ? 1 : 0);
-            resto--;
-
-            const gruppo = shuffledCoppie.slice(indiceCorrente, indiceCorrente + dimensioneGirone);
-            indiceCorrente += dimensioneGirone;
-
-            const letteraGirone = String.fromCharCode(65 + i);
-
-            gironi[l].push({
-              id: `Girone ${letteraGirone}`,
-              level: l,
-              players: gruppo,
-              matches: generateMatches(gruppo),
-              isGiallo: false
+            levels.forEach((level) => {
+                const levelPlayers = players.filter((p) => p.level === level);
+                html += `
+                          <div style="margin-bottom: 20px;">
+                              <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1rem;">${nomiLivelli[level]} (Livello ${level}) - ${levelPlayers.length} giocatori</h3>
+                              <div class="player-list">
+                                  ${levelPlayers
+                        .map(
+                            (p) => `
+                                      <div class="player-item">
+                                          <span>${p.name}</span>
+                                          <span class="level-badge">L${p.level}</span>
+                                      </div>
+                                  `,
+                        )
+                        .join("")}
+                              </div>
+                          </div>
+                      `;
             });
-          }
-        });
 
-        torneoId = "torneo_" + Date.now();
+            document.getElementById("playersByLevel").innerHTML = html;
+            document.getElementById("screen-import").classList.add("hidden");
+            document.getElementById("screen-players").classList.remove("hidden");
+        }
 
-        set(ref(database, "tornei/" + torneoId), {
-          creato: new Date().toISOString(),
-          players: players,
-          gironi: gironi,
-          finalBracket: finalBracket,
-          active: true
-        });
+        window.generateTournament = function () {
+            const levels = [...new Set(players.map((p) => p.level))].sort();
+            gironi = {};
 
-        ascoltaAggiornamenti();
-        showTournament();
-      };
+            levels.forEach((l) => {
+                const lp = players.filter((p) => p.level === l);
+                gironi[l] = [];
 
-      function generateMatches(players) {
-        const matches = [];
-        for (let i = 0; i < players.length; i++) {
-          for (let j = i + 1; j < players.length; j++) {
-            matches.push({
-              id: Math.random().toString(36).substr(2, 9),
-              player1: players[i],
-              player2: players[j],
-              score1: null,
-              score2: null,
-              completed: false
+                const giocatoriTotali = lp.length;
+                const shuffledGiocatori = [...lp].sort(() => Math.random() - 0.5);
+
+                const numeroGironi = Math.ceil(giocatoriTotali / 5);
+                const dimensioneBase = Math.floor(giocatoriTotali / numeroGironi);
+                let resto = giocatoriTotali % numeroGironi;
+
+                let indiceCorrente = 0;
+
+                for (let i = 0; i < numeroGironi; i++) {
+                    const dimensioneGirone = dimensioneBase + (resto > 0 ? 1 : 0);
+                    resto--;
+
+                    const gruppo = shuffledGiocatori.slice(
+                        indiceCorrente,
+                        indiceCorrente + dimensioneGirone,
+                    );
+                    indiceCorrente += dimensioneGirone;
+
+                    const letteraGirone = String.fromCharCode(65 + i);
+
+                    gironi[l].push({
+                        id: `Girone ${letteraGirone}`,
+                        level: l,
+                        players: gruppo,
+                        matches: [],
+                    });
+                }
             });
-          }
-        }
-        return matches;
-      }
 
-      function showTournament() {
-        const levels = Object.keys(gironi).sort();
-        if (levels.length === 0) return;
-        currentLevel = levels[0];
+            showEditGironi();
+        };
 
-        renderTabs();
-        renderGironi();
+        // ==================== DRAG & DROP NATIVO ====================
 
-        document.getElementById("screen-players").classList.add("hidden");
-        document.getElementById("screen-tournament").classList.remove("hidden");
-        document.getElementById("screen-standings").classList.remove("hidden");
-
-        if (torneoId) {
-          document.getElementById("shareSection").classList.remove("hidden");
-          document.getElementById("shareUrl").textContent =
-            window.location.origin + window.location.pathname + "?torneo=" + torneoId;
-        }
-      }
-
-      function renderTabs() {
-        const levels = Object.keys(gironi).sort();
-        let tabsHtml = "";
-        levels.forEach((level) => {
-          tabsHtml += `<div class="tab ${level === currentLevel ? "active" : ""}" onclick="window.switchLevel(${level})">${getLevelName(level)}</div>`;
-        });
-        document.getElementById("levelTabs").innerHTML = tabsHtml;
-      }
-
-      window.switchLevel = function (level) {
-        currentLevel = level;
-        document.querySelectorAll("#levelTabs .tab").forEach((tab) => tab.classList.remove("active"));
-        if (event && event.target) event.target.classList.add("active");
-        renderGironi();
-      };
-
-      function renderGironi() {
-        if (!gironi || Object.keys(gironi).length === 0) return;
-        if (!currentLevel || !gironi[currentLevel]) {
-          const availableLevels = Object.keys(gironi);
-          if (availableLevels.length > 0) currentLevel = availableLevels[0];
-          else return;
+        function showEditGironi() {
+            document.getElementById("screen-players").classList.add("hidden");
+            document.getElementById("screen-edit-gironi").classList.remove("hidden");
+            renderEditGironi();
         }
 
-        const levelGironi = gironi[currentLevel];
-        if (!levelGironi) return;
+        function renderEditGironi() {
+            let html = "";
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
+            };
 
-        let html = "";
-        levelGironi.forEach((girone) => {
-          if (!girone || !girone.players) return;
+            Object.keys(gironi)
+                .sort()
+                .forEach((level) => {
+                    const levelGironi = gironi[level];
+                    html += `<h3 style="color: #667eea; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">${nomiLivelli[level] || "Livello " + level}</h3>`;
 
-          html += `
-            <div class="girone-card">
-              <div class="girone-title">🏟️ Girone ${girone.id} - ${girone.players.length} Partecipanti</div>
-              <div style="margin-bottom: 15px; color: #666; font-size: 0.85rem;">
-                ${girone.players.map((p) => p.name).join(", ")}
-              </div>
-          `;
+                    levelGironi.forEach((girone, gIndex) => {
+                        html += `
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-weight: bold; color: #2d3748; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                    <span>🏟️ ${girone.id}</span>
+                                    <span style="font-size: 0.85rem; color: #718096;">${girone.players.length} giocatori</span>
+                                </div>
+                                <div class="drop-zone"
+                                     ondragover="handleDragOver(event, '${level}')"
+                                     ondragleave="handleDragLeave(event)"
+                                     ondrop="handleDrop(event, '${level}', ${gIndex})">
+                                    ${girone.players.length === 0 ? '<div style="text-align:center; color:#a0aec0; font-size:0.85rem; padding:10px;">Trascina qui un giocatore</div>' : ''}
+                                    ${girone.players
+                                        .map(
+                                            (p, pIndex) => `
+                                        <div class="draggable-player"
+                                             draggable="true"
+                                             ondragstart="handleDragStart(event, '${level}', ${gIndex}, ${pIndex})"
+                                             ondragend="handleDragEnd(event)">
+                                            <div style="display: flex; align-items: center;">
+                                                <span class="drag-handle">☰</span>
+                                                <span>${p.name}</span>
+                                            </div>
+                                            ${levelGironi.length > 1 ? `
+                                                <select class="move-select" onchange="movePlayerSelect('${level}', ${gIndex}, ${pIndex}, this.value)">
+                                                    ${levelGironi.map((gOpt, optIdx) => `
+                                                        <option value="${optIdx}" ${optIdx === gIndex ? 'selected' : ''}>${gOpt.id}</option>
+                                                    `).join('')}
+                                                </select>
+                                            ` : `<span class="level-badge" style="font-size: 0.75rem;">L${p.level}</span>`}
+                                        </div>
+                                    `,
+                                        )
+                                        .join("")}
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
 
-          if (girone.matches && Array.isArray(girone.matches)) {
-            girone.matches.forEach((match) => {
-              if (!match || !match.player1 || !match.player2) return;
+            document.getElementById("editGironiContainer").innerHTML = html;
+        }
 
-              html += `
-                <div class="match-row">
-                  <div class="match-player">${match.player1.name}</div>
-                  <input type="number" class="match-score ${match.completed ? "completed" : ""}"
-                         value="${match.score1 !== null ? match.score1 : ""}"
-                         placeholder="0"
-                         onchange="window.updateScore('${girone.id}', '${match.id}', 1, this.value)">
-                  <div class="match-player">${match.player2.name}</div>
-                  <input type="number" class="match-score ${match.completed ? "completed" : ""}"
-                         value="${match.score2 !== null ? match.score2 : ""}"
-                         placeholder="0"
-                         onchange="window.updateScore('${girone.id}', '${match.id}', 2, this.value)">
-                </div>
-              `;
+        window.handleDragStart = function (e, level, fromGironeIdx, playerIdx) {
+            draggedPlayerInfo = { level, fromGironeIdx, playerIdx };
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", JSON.stringify(draggedPlayerInfo));
+            setTimeout(() => {
+                if (e.target) e.target.classList.add("dragging");
+            }, 0);
+        };
+
+        window.handleDragEnd = function (e) {
+            if (e.target) e.target.classList.remove("dragging");
+            document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("drag-over"));
+        };
+
+        window.handleDragOver = function (e, targetLevel) {
+            if (!draggedPlayerInfo || draggedPlayerInfo.level !== targetLevel) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            e.currentTarget.classList.add("drag-over");
+        };
+
+        window.handleDragLeave = function (e) {
+            e.currentTarget.classList.remove("drag-over");
+        };
+
+        window.handleDrop = function (e, targetLevel, toGironeIdx) {
+            e.preventDefault();
+            e.currentTarget.classList.remove("drag-over");
+
+            if (!draggedPlayerInfo || draggedPlayerInfo.level !== targetLevel) return;
+
+            const { fromGironeIdx, playerIdx } = draggedPlayerInfo;
+            if (fromGironeIdx === toGironeIdx) {
+                draggedPlayerInfo = null;
+                return;
+            }
+
+            const [movedPlayer] = gironi[targetLevel][fromGironeIdx].players.splice(playerIdx, 1);
+            gironi[targetLevel][toGironeIdx].players.push(movedPlayer);
+
+            draggedPlayerInfo = null;
+            renderEditGironi();
+        };
+
+        // Funzione alternativa tramite menu a tendina (utilissima su smartphone/touch)
+        window.movePlayerSelect = function (level, fromGironeIdx, playerIdx, toGironeIdxStr) {
+            const toGironeIdx = parseInt(toGironeIdxStr);
+            if (fromGironeIdx === toGironeIdx) return;
+
+            const [movedPlayer] = gironi[level][fromGironeIdx].players.splice(playerIdx, 1);
+            gironi[level][toGironeIdx].players.push(movedPlayer);
+            renderEditGironi();
+        };
+
+        window.confirmGironi = function () {
+            let gironeIncompleto = false;
+
+            Object.keys(gironi).forEach((level) => {
+                gironi[level].forEach((girone) => {
+                    if (girone.players.length < 2) {
+                        gironeIncompleto = true;
+                    }
+                    girone.matches = generateMatches(girone.players);
+                });
             });
-          }
-          html += `</div>`;
-        });
-        document.getElementById("gironiContainer").innerHTML = html;
-        updateStandings();
-      }
 
-      window.updateScore = function (gironeId, matchId, player, value) {
-        if (!gironi[currentLevel]) return;
+            if (gironeIncompleto) {
+                if (!confirm("Attenzione: uno o più gironi hanno meno di 2 giocatori e non genereranno partite. Vuoi continuare lo stesso?")) {
+                    return;
+                }
+            }
 
-        const girone = gironi[currentLevel].find((g) => g.id === gironeId);
-        if (!girone || !girone.matches) return;
+            document.getElementById("screen-edit-gironi").classList.add("hidden");
 
-        const match = girone.matches.find((m) => m.id === matchId);
-        if (!match) return;
+            torneoId = "torneo_" + Date.now();
+            set(ref(database, "tornei/" + torneoId), {
+                creato: new Date().toISOString(),
+                players: players,
+                gironi: gironi,
+                finalBracket: finalBracket,
+                active: true,
+            });
+            ascoltaAggiornamenti();
+            showTournament();
+        };
 
-        const score = parseInt(value) || 0;
-        if (player === 1) match.score1 = score;
-        else match.score2 = score;
+        window.annullaGironi = function () {
+            document.getElementById("screen-edit-gironi").classList.add("hidden");
+            document.getElementById("screen-players").classList.remove("hidden");
+            gironi = {};
+        };
 
-        if (match.score1 !== null && match.score2 !== null) {
-          match.completed = true;
+        // ==================== PARTITE, CLASSIFICHE E TABELLONE ====================
+
+        function generateMatches(groupPlayers) {
+            const matches = [];
+            for (let i = 0; i < groupPlayers.length; i++) {
+                for (let j = i + 1; j < groupPlayers.length; j++) {
+                    matches.push({
+                        id: Math.random().toString(36).substr(2, 9),
+                        player1: groupPlayers[i],
+                        player2: groupPlayers[j],
+                        score1: null,
+                        score2: null,
+                        completed: false,
+                    });
+                }
+            }
+            return matches;
         }
 
-        salvaSuFirebase();
-        renderGironi();
-        updateStandings();
-      };
+        function showTournament() {
+            const levels = Object.keys(gironi).sort();
+            if (levels.length === 0) return;
+            currentLevel = levels[0];
 
-      function updateStandings() {
-        if (!gironi || Object.keys(gironi).length === 0) return;
+            renderTabs();
+            renderGironi();
 
-        let html = "";
-        Object.keys(gironi).sort().forEach((level) => {
-          if (!gironi[level] || !Array.isArray(gironi[level])) return;
+            document.getElementById("screen-players").classList.add("hidden");
+            document.getElementById("screen-tournament").classList.remove("hidden");
+            document.getElementById("screen-standings").classList.remove("hidden");
 
-          html += `<h3 style="margin-top: 20px; color: #667eea; font-size: 1.1rem;">${getLevelName(level)}</h3>`;
-          gironi[level].forEach((girone) => {
-            if (!girone || !girone.players) return;
+            document.getElementById("createBracketSection").innerHTML = `
+                      <button class="btn btn-warning" onclick="createFinalBracket()">🏆 Gironi Terminati - Crea Tabellone Finale</button>
+                      <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
+                          Clicca quando tutte le partite dei gironi sono terminate per generare le semifinali o la finale
+                      </p>
+                  `;
 
-            const stats = calculateStandings(girone);
-            html += `
-              <div style="margin-bottom: 20px;">
-                <div style="font-weight: bold; margin-bottom: 10px; color: #555; font-size: 0.9rem;">${girone.id}</div>
-                <table class="standings">
-                  <thead>
-                    <tr>
-                      <th>Pos</th><th>Nome</th><th>PG</th><th>V</th><th>P</th><th>DP</th><th>Pti</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${stats.map((s, i) => `
-                      <tr>
-                        <td>${i + 1}</td>
-                        <td><strong>${s.name}</strong></td>
-                        <td>${s.played}</td>
-                        <td>${s.won}</td>
-                        <td>${s.lost}</td>
-                        <td>${s.diff > 0 ? "+" : ""}${s.diff}</td>
-                        <td><strong>${s.points}</strong></td>
-                      </tr>
-                    `).join("")}
-                  </tbody>
-                </table>
-              </div>
+            if (
+                torneoId &&
+                !new URLSearchParams(window.location.search).get("torneo")
+            ) {
+                document.getElementById("shareSection").classList.remove("hidden");
+                document.getElementById("shareUrl").textContent =
+                    window.location.origin + window.location.pathname + "?torneo=" + torneoId;
+            }
+        }
+
+        function renderTabs() {
+            const levels = Object.keys(gironi).sort();
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
+            };
+
+            let tabsHtml = "";
+            levels.forEach((level) => {
+                tabsHtml += `<div class="tab ${level === currentLevel ? "active" : ""}" onclick="switchLevel(${level})">${nomiLivelli[level] || "Livello " + level}</div>`;
+            });
+            document.getElementById("levelTabs").innerHTML = tabsHtml;
+        }
+
+        window.switchLevel = function (level) {
+            currentLevel = level;
+            document
+                .querySelectorAll("#levelTabs .tab")
+                .forEach((tab) => tab.classList.remove("active"));
+            if (event) event.target.classList.add("active");
+            renderGironi();
+        };
+
+        function renderGironi() {
+            if (!gironi || Object.keys(gironi).length === 0) return;
+
+            if (!currentLevel || !gironi[currentLevel]) {
+                const availableLevels = Object.keys(gironi);
+                if (availableLevels.length > 0) {
+                    currentLevel = availableLevels[0];
+                    renderTabs();
+                } else {
+                    return;
+                }
+            }
+
+            const levelGironi = gironi[currentLevel];
+            if (!levelGironi || !Array.isArray(levelGironi)) return;
+
+            let html = "";
+            levelGironi.forEach((girone) => {
+                if (!girone || !girone.players) return;
+
+                html += `
+                          <div class="girone-card">
+                              <div class="girone-title">🏟️ ${girone.id} - ${girone.players.length} Partecipanti</div>
+                              <div style="margin-bottom: 15px; color: #666; font-size: 0.85rem;">
+                                  ${girone.players.map((p) => p.name).join(", ")}
+                              </div>
+                      `;
+
+                if (girone.matches && Array.isArray(girone.matches)) {
+                    girone.matches.forEach((match) => {
+                        if (!match || !match.player1 || !match.player2) return;
+
+                        html += `
+                                  <div class="match-row">
+                                      <div class="match-player">${match.player1.name}</div>
+                                      <input type="number" class="match-score ${match.completed ? "completed" : ""}"
+                                             value="${match.score1 !== null ? match.score1 : ""}"
+                                             placeholder="0"
+                                             onchange="updateScore('${girone.id}', '${match.id}', 1, this.value)">
+                                      <div class="match-player">${match.player2.name}</div>
+                                      <input type="number" class="match-score ${match.completed ? "completed" : ""}"
+                                             value="${match.score2 !== null ? match.score2 : ""}"
+                                             placeholder="0"
+                                             onchange="updateScore('${girone.id}', '${match.id}', 2, this.value)">
+                                  </div>
+                              `;
+                    });
+                }
+                html += `</div>`;
+            });
+            document.getElementById("gironiContainer").innerHTML = html;
+            updateStandings();
+        }
+
+        window.updateScore = function (gironeId, matchId, player, value) {
+            if (!gironi[currentLevel]) return;
+
+            const girone = gironi[currentLevel].find((g) => g.id === gironeId);
+            if (!girone || !girone.matches) return;
+
+            const match = girone.matches.find((m) => m.id === matchId);
+            if (!match) return;
+
+            const score = parseInt(value) || 0;
+            if (player === 1) match.score1 = score;
+            else match.score2 = score;
+            if (match.score1 !== null && match.score2 !== null)
+                match.completed = true;
+            salvaSuFirebase();
+            renderGironi();
+            updateStandings();
+        };
+
+        function updateStandings() {
+            if (!gironi || Object.keys(gironi).length === 0) {
+                document.getElementById("standingsContainer").innerHTML =
+                    "<p>Nessun dato disponibile</p>";
+                return;
+            }
+
+            let html = "";
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
+            };
+
+            Object.keys(gironi)
+                .sort()
+                .forEach((level) => {
+                    if (!gironi[level] || !Array.isArray(gironi[level])) return;
+
+                    html += `<h3 style="margin-top: 20px; color: #667eea; font-size: 1.1rem;">${nomiLivelli[level] || "Livello " + level}</h3>`;
+                    gironi[level].forEach((girone) => {
+                        if (!girone || !girone.players) return;
+
+                        const stats = calculateStandings(girone);
+                        html += `
+                              <div style="margin-bottom: 20px;">
+                                  <div style="font-weight: bold; margin-bottom: 10px; color: #555; font-size: 0.9rem;">${girone.id}</div>
+                                  <table class="standings">
+                                      <thead>
+                                          <tr>
+                                              <th>Pos</th>
+                                              <th>Nome</th>
+                                              <th>PG</th>
+                                              <th>V</th>
+                                              <th>P</th>
+                                              <th>DP</th>
+                                              <th>Pti</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          ${stats
+                                .map(
+                                    (s, i) => `
+                                              <tr>
+                                                  <td>${i + 1}</td>
+                                                  <td><strong>${s.name}</strong></td>
+                                                  <td>${s.played}</td>
+                                                  <td>${s.won}</td>
+                                                  <td>${s.lost}</td>
+                                                  <td>${s.diff > 0 ? "+" : ""}${s.diff}</td>
+                                                  <td><strong>${s.points}</strong></td>
+                                              </tr>
+                                          `,
+                                )
+                                .join("")}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          `;
+                    });
+                });
+            document.getElementById("standingsContainer").innerHTML = html;
+        }
+
+        function calculateStandings(girone) {
+            if (!girone || !girone.players || !girone.matches) return [];
+
+            const stats = {};
+            girone.players.forEach((p) => {
+                if (!p || !p.id) return;
+                stats[p.id] = {
+                    name: p.name,
+                    played: 0,
+                    won: 0,
+                    lost: 0,
+                    gf: 0,
+                    gs: 0,
+                    points: 0,
+                };
+            });
+
+            girone.matches.forEach((m) => {
+                if (!m || !m.completed) return;
+
+                const s1 = parseInt(m.score1) || 0;
+                const s2 = parseInt(m.score2) || 0;
+
+                if (m.player1.id && m.player2.id) {
+                    const p1 = stats[m.player1.id];
+                    const p2 = stats[m.player2.id];
+                    if (!p1 || !p2) return;
+
+                    p1.played++;
+                    p2.played++;
+                    p1.gf += s1;
+                    p1.gs += s2;
+                    p2.gf += s2;
+                    p2.gs += s1;
+
+                    if (s1 > s2) {
+                        p1.won++;
+                        p1.points += 3;
+                        p2.lost++;
+                    } else if (s2 > s1) {
+                        p2.won++;
+                        p2.points += 3;
+                        p1.lost++;
+                    } else {
+                        p1.points += 1;
+                        p2.points += 1;
+                    }
+                }
+            });
+
+            return Object.values(stats)
+                .map((s) => ({...s, diff: s.gf - s.gs}))
+                .sort((a, b) => b.points - a.points || b.diff - a.diff);
+        }
+
+        window.createFinalBracket = function () {
+            const levels = Object.keys(gironi).sort();
+            let canCreateBracket = true;
+            let errorMessage = "";
+
+            for (let level of levels) {
+                const levelGironi = gironi[level];
+                if (!levelGironi || levelGironi.length === 0) {
+                    canCreateBracket = false;
+                    errorMessage = `Il livello ${getLevelName(level)} non ha gironi.`;
+                    break;
+                }
+
+                for (let girone of levelGironi) {
+                    if (!girone.players || girone.players.length < 2) {
+                        canCreateBracket = false;
+                        errorMessage = `Il girone ${girone.id} ha meno di 2 partecipanti.`;
+                        break;
+                    }
+                }
+            }
+
+            if (!canCreateBracket) {
+                alert(errorMessage);
+                return;
+            }
+
+            finalBracket = {};
+
+            levels.forEach((level) => {
+                const levelGironi = gironi[level];
+                const numGironi = levelGironi.length;
+
+                if (numGironi === 1) {
+                    const girone = levelGironi[0];
+                    const standings = calculateStandings(girone);
+
+                    if (standings.length < 2) {
+                        alert(
+                            `Il girone ${girone.id} non ha abbastanza partecipanti per la finale.`,
+                        );
+                        return;
+                    }
+
+                    finalBracket[level] = {
+                        isSingleGirone: true,
+                        semifinals: [],
+                        final: {
+                            id: "F_" + level,
+                            team1: standings[0],
+                            team2: standings[1],
+                            score1: null,
+                            score2: null,
+                            completed: false,
+                        },
+                        thirdPlace: null,
+                    };
+                } else {
+                    const standingsPerGirone = levelGironi.map((g) => ({
+                        gironeId: g.id,
+                        standings: calculateStandings(g),
+                    }));
+
+                    const firstPlaceTeams = standingsPerGirone
+                        .map((s) => s.standings[0])
+                        .filter(Boolean);
+                    const secondPlaceTeams = standingsPerGirone
+                        .map((s) => s.standings[1])
+                        .filter(Boolean);
+                    const sortedSecond = [...secondPlaceTeams].sort(
+                        (a, b) => b.points - a.points || b.diff - a.diff,
+                    );
+
+                    let semifinalists = [];
+
+                    if (levelGironi.length % 2 !== 0) {
+                        semifinalists = [...firstPlaceTeams, sortedSecond[0]].slice(0, 4);
+                    } else {
+                        semifinalists = [...firstPlaceTeams, ...secondPlaceTeams].slice(
+                            0,
+                            4,
+                        );
+                    }
+
+                    finalBracket[level] = {
+                        isSingleGirone: false,
+                        semifinals: [
+                            {
+                                id: "SF1_" + level,
+                                team1: semifinalists[0],
+                                team2: semifinalists[3],
+                                score1: null,
+                                score2: null,
+                                completed: false,
+                            },
+                            {
+                                id: "SF2_" + level,
+                                team1: semifinalists[1],
+                                team2: semifinalists[2],
+                                score1: null,
+                                score2: null,
+                                completed: false,
+                            },
+                        ],
+                        final: null,
+                        thirdPlace: null,
+                    };
+
+                    if (levelGironi.length > 2) {
+                        finalBracket[level].semifinals[0].team1 = firstPlaceTeams[0];
+                        finalBracket[level].semifinals[0].team2 =
+                            secondPlaceTeams[1] ||
+                            firstPlaceTeams[2] ||
+                            secondPlaceTeams[0];
+                        finalBracket[level].semifinals[1].team1 = firstPlaceTeams[1];
+                        finalBracket[level].semifinals[1].team2 =
+                            secondPlaceTeams[0] ||
+                            firstPlaceTeams[2] ||
+                            secondPlaceTeams[1];
+                    }
+                }
+            });
+
+            salvaSuFirebase();
+            viewFinalBracket();
+
+            document.getElementById("createBracketSection").innerHTML = `
+                <button class="btn btn-secondary" onclick="viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
             `;
-          });
-        });
-        document.getElementById("standingsContainer").innerHTML = html;
-      }
+        };
 
-      function calculateStandings(girone) {
-        if (!girone || !girone.players || !girone.matches) return [];
+        window.viewFinalBracket = function () {
+            document.getElementById("screen-tournament").classList.add("hidden");
+            document.getElementById("screen-standings").classList.add("hidden");
+            document.getElementById("screen-bracket").classList.remove("hidden");
 
-        const stats = {};
-        girone.players.forEach((p) => {
-          if (p && p.id) {
-            stats[p.id] = { name: p.name, played: 0, won: 0, lost: 0, gf: 0, gs: 0, points: 0 };
-          }
-        });
+            renderBracketTabs();
+            renderBracket();
+        };
 
-        girone.matches.forEach((m) => {
-          if (!m || !m.completed) return;
-          const s1 = parseInt(m.score1) || 0;
-          const s2 = parseInt(m.score2) || 0;
+        window.backToGironi = function () {
+            document.getElementById("screen-bracket").classList.add("hidden");
+            document.getElementById("screen-tournament").classList.remove("hidden");
+            document.getElementById("screen-standings").classList.remove("hidden");
+        };
 
-          if (m.player1.id && m.player2.id) {
-            const p1 = stats[m.player1.id];
-            const p2 = stats[m.player2.id];
-            if (!p1 || !p2) return;
-
-            p1.played++; p2.played++;
-            p1.gf += s1; p1.gs += s2;
-            p2.gf += s2; p2.gs += s1;
-
-            if (s1 > s2) { p1.won++; p1.points += 3; p2.lost++; }
-            else if (s2 > s1) { p2.won++; p2.points += 3; p1.lost++; }
-            else { p1.points += 1; p2.points += 1; }
-          }
-        });
-
-        return Object.values(stats)
-          .map((s) => ({ ...s, diff: s.gf - s.gs }))
-          .sort((a, b) => b.points - a.points || b.diff - a.diff);
-      }
-
-      window.createFinalBracket = function () {
-        const levels = Object.keys(gironi).sort();
-        finalBracket = {};
-
-        levels.forEach((level) => {
-          const levelGironi = gironi[level];
-          const numGironi = levelGironi.length;
-
-          if (numGironi === 1) {
-            const girone = levelGironi[0];
-            const standings = calculateStandings(girone);
-
-            finalBracket[level] = {
-              isSingleGirone: true,
-              semifinals: [],
-              final: {
-                id: "F_" + level,
-                team1: standings[0],
-                team2: standings[1],
-                score1: null,
-                score2: null,
-                completed: false
-              },
-              thirdPlace: null
+        function renderBracketTabs() {
+            const levels = Object.keys(finalBracket).sort();
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
             };
-          } else {
-            const standingsPerGirone = levelGironi.map((g) => ({
-              gironeId: g.id,
-              standings: calculateStandings(g)
-            }));
 
-            const firstPlaceTeams = standingsPerGirone.map((s) => s.standings[0]).filter(Boolean);
-            const secondPlaceTeams = standingsPerGirone.map((s) => s.standings[1]).filter(Boolean);
-            const sortedSecond = [...secondPlaceTeams].sort((a, b) => b.points - a.points || b.diff - a.diff);
+            if (levels.length === 0) return;
 
-            let semifinalists = (levelGironi.length % 2 !== 0)
-              ? [...firstPlaceTeams, sortedSecond[0]].slice(0, 4)
-              : [...firstPlaceTeams, ...secondPlaceTeams].slice(0, 4);
-
-            finalBracket[level] = {
-              isSingleGirone: false,
-              semifinals: [
-                { id: "SF1_" + level, team1: semifinalists[0], team2: semifinalists[3], score1: null, score2: null, completed: false },
-                { id: "SF2_" + level, team1: semifinalists[1], team2: semifinalists[2], score1: null, score2: null, completed: false }
-              ],
-              final: null,
-              thirdPlace: null
-            };
-          }
-        });
-
-        salvaSuFirebase();
-        window.viewFinalBracket();
-
-        document.getElementById("createBracketSection").innerHTML = `
-          <button class="btn btn-secondary" onclick="window.viewFinalBracket()">🏆 Visualizza Tabellone Finale</button>
-        `;
-      };
-
-      window.viewFinalBracket = function () {
-        document.getElementById("screen-tournament").classList.add("hidden");
-        document.getElementById("screen-standings").classList.add("hidden");
-        document.getElementById("screen-bracket").classList.remove("hidden");
-
-        renderBracketTabs();
-        renderBracket();
-      };
-
-      window.backToGironi = function () {
-        document.getElementById("screen-bracket").classList.add("hidden");
-        document.getElementById("screen-tournament").classList.remove("hidden");
-        document.getElementById("screen-standings").classList.remove("hidden");
-      };
-
-      function renderBracketTabs() {
-        const levels = Object.keys(finalBracket).sort();
-        if (levels.length === 0) return;
-        if (!currentBracketLevel || !finalBracket[currentBracketLevel]) currentBracketLevel = levels[0];
-
-        let tabsHtml = "";
-        levels.forEach((level) => {
-          tabsHtml += `<div class="tab ${level === currentBracketLevel ? "active" : ""}" onclick="window.switchBracketLevel(${level})">${getLevelName(level)}</div>`;
-        });
-        document.getElementById("bracketLevelTabs").innerHTML = tabsHtml;
-      }
-
-      window.switchBracketLevel = function (level) {
-        currentBracketLevel = level;
-        document.querySelectorAll("#bracketLevelTabs .tab").forEach((tab) => tab.classList.remove("active"));
-        if (event && event.target) event.target.classList.add("active");
-        renderBracket();
-      };
-
-      function renderBracket() {
-        if (!currentBracketLevel || !finalBracket[currentBracketLevel]) return;
-
-        const bracket = finalBracket[currentBracketLevel];
-        let html = '<div class="bracket-container">';
-
-        if (bracket.isSingleGirone) {
-          html += '<div class="single-girone-info">🏆 Girone unico - Finale diretta tra 1° e 2° classificato</div>';
-          if (bracket.final) {
-            html += '<div class="bracket-title">🏆 Finale</div>';
-            html += renderFinalMatch(bracket.final, "single-girone");
-          }
-        } else {
-          html += '<div class="bracket-title">⚔️ Semifinali</div>';
-          bracket.semifinals.forEach((match) => {
-            if (match.team1 && match.team2) {
-              html += renderFinalMatch(match, "semifinal");
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) {
+                currentBracketLevel = levels[0];
             }
-          });
 
-          if (bracket.final) {
-            html += '<div class="bracket-title">🏆 Finale</div>';
-            html += renderFinalMatch(bracket.final, "finals");
-          } else if (bracket.semifinals.every((m) => m.completed)) {
-            const sf1Winner = bracket.semifinals[0].score1 > bracket.semifinals[0].score2 ? bracket.semifinals[0].team1 : bracket.semifinals[0].team2;
-            const sf2Winner = bracket.semifinals[1].score1 > bracket.semifinals[1].score2 ? bracket.semifinals[1].team1 : bracket.semifinals[1].team2;
-
-            bracket.final = { id: "F_" + currentBracketLevel, team1: sf1Winner, team2: sf2Winner, score1: null, score2: null, completed: false };
-            html += '<div class="bracket-title">🏆 Finale</div>';
-            html += renderFinalMatch(bracket.final, "finals");
-          }
+            let tabsHtml = "";
+            levels.forEach((level) => {
+                tabsHtml += `<div class="tab ${level === currentBracketLevel ? "active" : ""}" onclick="switchBracketLevel(${level})">${nomiLivelli[level] || "Livello " + level}</div>`;
+            });
+            document.getElementById("bracketLevelTabs").innerHTML = tabsHtml;
         }
 
-        html += "</div>";
-        document.getElementById("bracketContainer").innerHTML = html;
-      }
+        window.switchBracketLevel = function (level) {
+            currentBracketLevel = level;
+            document
+                .querySelectorAll("#bracketLevelTabs .tab")
+                .forEach((tab) => tab.classList.remove("active"));
+            if (event) event.target.classList.add("active");
+            renderBracket();
+        };
 
-      function renderFinalMatch(match, cssClass) {
-        if (!match.team1 || !match.team2) return "";
-        return `
-          <div class="bracket-match ${cssClass}">
-            <div class="bracket-teams">
-              <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
-                <div>${match.team1.name}</div>
-                <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
-                       value="${match.score1 !== null ? match.score1 : ""}"
-                       placeholder="0"
-                       onchange="window.updateBracketScore('${match.id}', 1, this.value)">
-              </div>
-              <div class="bracket-vs">VS</div>
-              <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
-                <div>${match.team2.name}</div>
-                <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
-                       value="${match.score2 !== null ? match.score2 : ""}"
-                       placeholder="0"
-                       onchange="window.updateBracketScore('${match.id}', 2, this.value)">
-              </div>
-            </div>
-          </div>
-        `;
-      }
+        function renderBracket() {
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) {
+                document.getElementById("bracketContainer").innerHTML =
+                    "<p>Nessun tabellone disponibile per questo livello.</p>";
+                return;
+            }
 
-      window.updateBracketScore = function (matchId, player, value) {
-        if (!currentBracketLevel || !finalBracket[currentBracketLevel]) return;
-        const bracket = finalBracket[currentBracketLevel];
-        const score = parseInt(value) || 0;
+            const bracket = finalBracket[currentBracketLevel];
+            let html = '<div class="bracket-container">';
 
-        let match = null;
-        if (!bracket.isSingleGirone && bracket.semifinals) {
-          match = bracket.semifinals.find((m) => m.id === matchId);
+            if (bracket.isSingleGirone) {
+                html +=
+                    '<div class="single-girone-info">🏆 Girone unico - Finale diretta tra 1° e 2° classificato</div>';
+
+                if (bracket.final) {
+                    html += '<div class="bracket-title">🏆 Finale</div>';
+                    html += renderFinalMatch(bracket.final, "single-girone");
+
+                    if (bracket.final.completed) {
+                        html += `
+                          <div style="text-align: center; margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                              <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+                              <div style="font-size: 1.2rem; font-weight: bold;">Campione del Livello ${getLevelName(currentBracketLevel)}</div>
+                              <div style="font-size: 1.5rem; margin-top: 10px;">${bracket.final.score1 > bracket.final.score2 ? bracket.final.team1.name : bracket.final.team2.name}</div>
+                          </div>
+                        `;
+                    }
+                }
+            } else {
+                html += '<div class="bracket-title">⚔️ Semifinali</div>';
+                bracket.semifinals.forEach((match) => {
+                    if (!match.team1 || !match.team2) {
+                        html += `<div class="bracket-match"><p>Match non disponibile</p></div>`;
+                        return;
+                    }
+
+                    html += `
+                        <div class="bracket-match">
+                            <div class="bracket-teams">
+                                <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
+                                    <div>${match.team1.name}</div>
+                                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                           value="${match.score1 !== null ? match.score1 : ""}"
+                                           placeholder="0"
+                                           onchange="updateBracketScore('${match.id}', 1, this.value)">
+                                </div>
+                                <div class="bracket-vs">VS</div>
+                                <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
+                                    <div>${match.team2.name}</div>
+                                    <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                           value="${match.score2 !== null ? match.score2 : ""}"
+                                           placeholder="0"
+                                           onchange="updateBracketScore('${match.id}', 2, this.value)">
+                                </div>
+                            </div>
+                            ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
+                        </div>
+                    `;
+                });
+
+                if (bracket.final) {
+                    html += '<div class="bracket-title">🏆 Finale</div>';
+                    html += renderFinalMatch(bracket.final, "finals");
+                } else if (bracket.semifinals.every((m) => m.completed)) {
+                    const sf1Winner =
+                        bracket.semifinals[0].score1 > bracket.semifinals[0].score2
+                            ? bracket.semifinals[0].team1
+                            : bracket.semifinals[0].team2;
+                    const sf2Winner =
+                        bracket.semifinals[1].score1 > bracket.semifinals[1].score2
+                            ? bracket.semifinals[1].team1
+                            : bracket.semifinals[1].team2;
+
+                    bracket.final = {
+                        id: "F_" + currentBracketLevel,
+                        team1: sf1Winner,
+                        team2: sf2Winner,
+                        score1: null,
+                        score2: null,
+                        completed: false,
+                    };
+
+                    html += '<div class="bracket-title">🏆 Finale (generata)</div>';
+                    html += renderFinalMatch(bracket.final, "finals");
+                }
+
+                if (bracket.thirdPlace) {
+                    html += '<div class="bracket-title">🥉 Finale 3° Posto</div>';
+                    html += renderFinalMatch(bracket.thirdPlace, "third");
+                } else if (
+                    bracket.semifinals.every((m) => m.completed) &&
+                    !bracket.thirdPlace
+                ) {
+                    const sf1Loser =
+                        bracket.semifinals[0].score1 > bracket.semifinals[0].score2
+                            ? bracket.semifinals[0].team2
+                            : bracket.semifinals[0].team1;
+                    const sf2Loser =
+                        bracket.semifinals[1].score1 > bracket.semifinals[1].score2
+                            ? bracket.semifinals[1].team2
+                            : bracket.semifinals[1].team1;
+
+                    bracket.thirdPlace = {
+                        id: "TP_" + currentBracketLevel,
+                        team1: sf1Loser,
+                        team2: sf2Loser,
+                        score1: null,
+                        score2: null,
+                        completed: false,
+                    };
+
+                    html +=
+                        '<div class="bracket-title">🥉 Finale 3° Posto (generata)</div>';
+                    html += renderFinalMatch(bracket.thirdPlace, "third");
+                }
+            }
+
+            html += "</div>";
+            document.getElementById("bracketContainer").innerHTML = html;
         }
-        if (!match && bracket.final && bracket.final.id === matchId) {
-          match = bracket.final;
+
+        function renderFinalMatch(match, cssClass) {
+            if (!match.team1 || !match.team2) return "<p>Match non disponibile</p>";
+
+            return `
+                      <div class="bracket-match ${cssClass}">
+                          <div class="bracket-teams">
+                              <div class="bracket-team ${match.completed && match.score1 > match.score2 ? "winner" : ""}">
+                                  <div>${match.team1.name}</div>
+                                  <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                         value="${match.score1 !== null ? match.score1 : ""}"
+                                         placeholder="0"
+                                         onchange="updateBracketScore('${match.id}', 1, this.value)">
+                              </div>
+                              <div class="bracket-vs">VS</div>
+                              <div class="bracket-team ${match.completed && match.score2 > match.score1 ? "winner" : ""}">
+                                  <div>${match.team2.name}</div>
+                                  <input type="number" class="bracket-score-input ${match.completed ? "completed" : ""}"
+                                         value="${match.score2 !== null ? match.score2 : ""}"
+                                         placeholder="0"
+                                         onchange="updateBracketScore('${match.id}', 2, this.value)">
+                              </div>
+                          </div>
+                          ${match.completed ? `<div class="bracket-result">Vincitore: ${match.score1 > match.score2 ? match.team1.name : match.team2.name}</div>` : ""}
+                      </div>
+                  `;
         }
 
-        if (!match) return;
+        window.updateBracketScore = function (matchId, player, value) {
+            if (!currentBracketLevel || !finalBracket[currentBracketLevel]) return;
 
-        if (player === 1) match.score1 = score;
-        else match.score2 = score;
+            const bracket = finalBracket[currentBracketLevel];
+            const score = parseInt(value) || 0;
 
-        if (match.score1 !== null && match.score2 !== null) {
-          match.completed = true;
+            let match = null;
+
+            if (!bracket.isSingleGirone && bracket.semifinals) {
+                match = bracket.semifinals.find((m) => m.id === matchId);
+            }
+
+            if (!match && bracket.final && bracket.final.id === matchId) {
+                match = bracket.final;
+            }
+
+            if (!match && bracket.thirdPlace && bracket.thirdPlace.id === matchId) {
+                match = bracket.thirdPlace;
+            }
+
+            if (!match) return;
+
+            if (player === 1) match.score1 = score;
+            else match.score2 = score;
+
+            if (match.score1 !== null && match.score2 !== null) {
+                match.completed = true;
+            }
+
+            salvaSuFirebase();
+            renderBracket();
+        };
+
+        function getLevelName(level) {
+            const nomiLivelli = {
+                1: "Avviamento",
+                2: "Pre-perfezionamento",
+                3: "Perfezionamento",
+                4: "Specializzazione",
+            };
+            return nomiLivelli[level] || "Livello " + level;
         }
 
-        salvaSuFirebase();
-        renderBracket();
-      };
+        window.copiaLink = function () {
+            const url = document.getElementById("shareUrl").textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("Link copiato! Incollalo in WhatsApp o Email.");
+            });
+        };
 
-      window.copiaLink = function () {
-        const url = document.getElementById("shareUrl").textContent;
-        navigator.clipboard.writeText(url).then(() => {
-          alert("Link copiato negli appunti! INVILO A CHIUNQUE PER SEGUIRE IL TORNEO LIVE.");
-        });
-      };
+        window.loadDemoData = loadDemoData;
+        window.importPlayers = importPlayers;
+        window.generateTournament = generateTournament;
+        window.confirmGironi = confirmGironi;
+        window.annullaGironi = annullaGironi;
+        window.copiaLink = copiaLink;
+        window.createFinalBracket = createFinalBracket;
+        window.viewFinalBracket = viewFinalBracket;
+        window.backToGironi = backToGironi;
+        window.updateBracketScore = updateBracketScore;
+        window.switchBracketLevel = switchBracketLevel;
 
-      // Caricamento torneo tramite Link Condivisibile (?torneo=ID)
-      window.onload = function () {
-        const params = new URLSearchParams(window.location.search);
-        const torneoDallUrl = params.get("torneo");
-        if (torneoDallUrl) {
-          caricaTorneo(torneoDallUrl);
-        }
-      };
+        window.onload = function () {
+            const params = new URLSearchParams(window.location.search);
+            const torneoDallUrl = params.get("torneo");
+            if (torneoDallUrl) {
+                caricaTorneo(torneoDallUrl);
+            }
+        };
     </script>
-  </body>
+</body>
+
 </html>
